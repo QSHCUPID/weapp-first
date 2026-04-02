@@ -1,0 +1,98 @@
+.container {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 40rpx;
+}
+
+.header {
+  text-align: center;
+  margin-bottom: 60rpx;
+  padding-top: 40rpx;
+}
+
+.title {
+  display: block;
+  font-size: 56rpx;
+  font-weight: bold;
+  color: white;
+  margin-bottom: 20rpx;
+}
+
+.subtitle {
+  font-size: 28rpx;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.tool-list {
+  background: white;
+  border-radius: 24rpx;
+  overflow: hidden;
+  box-shadow: 0 10rpx 40rpx rgba(0, 0, 0, 0.1);
+}
+
+.tool-item {
+  display: flex;
+  align-items: center;
+  padding: 40rpx;
+  border-bottom: 1rpx solid #f0f0f0;
+  transition: all 0.3s;
+}
+
+.tool-item:last-child {
+  border-bottom: none;
+}
+
+.tool-item:active {
+  background: #f5f5f5;
+}
+
+.tool-item.coming-soon {
+  opacity: 0.6;
+}
+
+.tool-icon {
+  font-size: 64rpx;
+  margin-right: 30rpx;
+  width: 100rpx;
+  text-align: center;
+}
+
+.tool-info {
+  flex: 1;
+}
+
+.tool-name {
+  font-size: 36rpx;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 8rpx;
+}
+
+.tool-desc {
+  font-size: 26rpx;
+  color: #999;
+}
+
+.tool-arrow {
+  font-size: 48rpx;
+  color: #ccc;
+  font-weight: 300;
+}
+
+.soon-tag {
+  font-size: 22rpx;
+  color: #667eea;
+  background: rgba(102, 126, 234, 0.1);
+  padding: 8rpx 20rpx;
+  border-radius: 20rpx;
+}
+
+.footer {
+  text-align: center;
+  margin-top: 60rpx;
+}
+
+.footer-text {
+  font-size: 26rpx;
+  color: rgba(255, 255, 255, 0.7);
+}

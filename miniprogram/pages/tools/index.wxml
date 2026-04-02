@@ -1,0 +1,30 @@
+<view class="container">
+  <view class="header">
+    <text class="title">🛠️ 工具大集合</text>
+    <text class="subtitle">你的实用工具箱</text>
+  </view>
+  
+  <view class="tool-list">
+    <view 
+      class="tool-item {{tool.comingSoon ? 'coming-soon' : ''}}" 
+      wx:for="{{tools}}" 
+      wx:key="id"
+      data-tool="{{item}}"
+      bindtap="openTool"
+    >
+      <view class="tool-icon">{{item.icon}}</view>
+      <view class="tool-info">
+        <view class="tool-name">{{item.name}}</view>
+        <view class="tool-desc">{{item.description}}</view>
+      </view>
+      <view class="tool-arrow">
+        <text wx:if="{{!tool.comingSoon}}">›</text>
+        <text wx:else class="soon-tag">即将上线</text>
+      </view>
+    </view>
+  </view>
+  
+  <view class="footer">
+    <text class="footer-text">持续更新中... ✨</text>
+  </view>
+</view>
