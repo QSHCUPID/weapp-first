@@ -152,6 +152,16 @@ Page({
     }
   },
 
+  onImageClick(e) {
+    const url = e.currentTarget.dataset.url;
+    if (url) {
+      wx.previewImage({
+        urls: [url],
+        current: url
+      });
+    }
+  },
+
   async onLikeClick(e) {
     const id = e.currentTarget.dataset.id;
     

@@ -67,6 +67,8 @@
             src="{{item.displayUrl}}"
             mode="aspectFill"
             class="post-image"
+            data-url="{{item.displayUrl}}"
+            catchtap="onImageClick"
           />
           <video
             wx:elif="{{item.type === 'video' && item.displayUrl}}"
@@ -149,9 +151,11 @@
           src="{{viewPost.displayUrl}}"
           mode="aspectFit"
           class="post-image-large"
+          data-url="{{viewPost.displayUrl}}"
+          catchtap="onImageClick"
         />
-        <video 
-          wx:elif="{{viewPost.type === 'video' && viewPost.displayUrl}}" 
+        <video
+          wx:elif="{{viewPost.type === 'video' && viewPost.displayUrl}}"
           src="{{viewPost.displayUrl}}"
           mode="aspectFit"
           class="post-video-large"
