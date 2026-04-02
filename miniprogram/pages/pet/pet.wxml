@@ -168,8 +168,8 @@
   </view>
 
   <!-- Add Post Modal -->
-  <view wx:if="{{showAddModal}}" class="modal" catchtap="onModalClose">
-    <view class="modal-content" catchtap="">
+  <view wx:if="{{showAddModal}}" class="modal">
+    <view class="modal-content">
       <view class="modal-header">
         <text class="modal-title">✨ 发布新动态</text>
         <view class="close-btn" bindtap="onModalClose">×</view>
