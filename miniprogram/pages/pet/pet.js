@@ -1,5 +1,4 @@
 const DB = wx.cloud.database().collection('pet_posts');
-const _ = wx.cloud.database().command;
 
 Page({
   data: {
@@ -46,7 +45,6 @@ Page({
   initCloud() {
     if (!wx.cloud) {
       console.error('请使用 2.2.3 或以上的基础库以使用云能力');
-      return;
     }
   },
 
