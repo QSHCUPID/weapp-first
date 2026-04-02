@@ -2,18 +2,18 @@ Page({
   data: {
     tools: [
       {
-        id: 'calculator',
-        name: '计算器',
-        icon: '🧮',
-        description: '简单好用的计算器',
-        path: '',
-        comingSoon: true
-      },
-      {
         id: 'pet',
         name: '棠棠成长日记',
         icon: '🐕',
         description: '记录毛茸茸的每一天',
+        path: '/pages/pet/pet',
+        comingSoon: false
+      },
+      {
+        id: 'calculator',
+        name: '计算器',
+        icon: '🧮',
+        description: '简单好用的计算器',
         path: '',
         comingSoon: true
       },

@@ -1,6 +1,7 @@
 {
   "pages": [
     "pages/tools/index",
+    "pages/pet/pet",
     "pages/index/index",
     "pages/example/index"
   ],

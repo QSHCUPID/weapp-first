@@ -1,0 +1,241 @@
+<view class="container">
+  <!-- Hero Section -->
+  <view class="hero">
+    <view class="hero-content">
+      <text class="hero-emoji">🐕</text>
+      <text class="hero-title">棠棠成长日记</text>
+      <text class="hero-subtitle">记录毛茸茸的每一天</text>
+      <text class="hero-desc">分享可爱、温馨、快乐的瞬间 ✨</text>
+    </view>
+  </view>
+
+  <!-- Filter Bar -->
+  <view class="filter-bar">
+    <view 
+      class="filter-btn {{currentFilter === 'all' ? 'active' : ''}}" 
+      data-filter="all"
+      bindtap="onFilterChange"
+    >全部</view>
+    <view 
+      class="filter-btn {{currentFilter === 'photo' ? 'active' : ''}}" 
+      data-filter="photo"
+      bindtap="onFilterChange"
+    >🖼️ 照片</view>
+    <view 
+      class="filter-btn {{currentFilter === 'video' ? 'active' : ''}}" 
+      data-filter="video"
+      bindtap="onFilterChange"
+    >🎬 视频</view>
+    <view 
+      class="filter-btn {{currentFilter === 'text' ? 'active' : ''}}" 
+      data-filter="text"
+      bindtap="onFilterChange"
+    >📝 文字</view>
+  </view>
+
+  <!-- Posts Grid -->
+  <view class="posts-section">
+    <view class="section-title">
+      <text class="title-paw">🐾</text>
+      <text>可爱瞬间</text>
+    </view>
+
+    <view wx:if="{{loading}}" class="loading">
+      <view class="spinner"></view>
+      <text>加载中...</text>
+    </view>
+
+    <view wx:elif="{{filteredPosts.length === 0}}" class="empty-state">
+      <text class="empty-icon">🐕</text>
+      <text class="empty-text">还没有动态哦～</text>
+      <text class="empty-desc">快点击右下角的按钮发布第一条吧！</text>
+    </view>
+
+    <view wx:else class="posts-grid">
+      <view 
+        class="post-card" 
+        wx:for="{{filteredPosts}}" 
+        wx:key="_id"
+        data-id="{{item._id}}"
+        bindtap="onPostClick"
+      >
+        <view class="delete-btn" data-id="{{item._id}}" catchtap="onDeleteClick">🗑️</view>
+        
+        <view class="post-media">
+          <image 
+            wx:if="{{item.type === 'photo' && item.fileID}}" 
+            src="{{item.fileID}}" 
+            mode="aspectFill"
+            class="post-image"
+          />
+          <video 
+            wx:elif="{{item.type === 'video' && item.fileID}}" 
+            src="{{item.fileID}}"
+            mode="aspectFill"
+            class="post-video"
+            show-center-play-btn="{{true}}"
+            controls="{{true}}"
+          />
+          <view wx:else class="post-emoji">
+            {{item.type === 'photo' ? '📸' : (item.type === 'video' ? '🎬' : '📝')}}
+          </view>
+        </view>
+
+        <view class="post-content">
+          <view class="post-type-badge type-{{item.type}}">
+            {{item.type === 'photo' ? '🖼️ 照片' : (item.type === 'video' ? '🎬 视频' : '📝 文字')}}
+          </view>
+          <view class="post-title">{{item.title}}</view>
+          <view wx:if="{{item.content}}" class="post-text">{{item.content}}</view>
+          <view class="post-meta">
+            <view class="post-date">📅 {{item.dateText}}</view>
+            <view class="post-likes" data-id="{{item._id}}" catchtap="onLikeClick">
+              <text>❤️</text>
+              <text>{{item.likes || 0}}</text>
+            </view>
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- Stats Section -->
+  <view class="stats-section">
+    <view class="section-title">
+      <text class="title-paw">🐾</text>
+      <text>成长统计</text>
+    </view>
+    <view class="stats-grid">
+      <view class="stat-card">
+        <text class="stat-icon">📸</text>
+        <text class="stat-number">{{stats.totalPosts}}</text>
+        <text class="stat-label">总动态数</text>
+      </view>
+      <view class="stat-card">
+        <text class="stat-icon">🖼️</text>
+        <text class="stat-number">{{stats.photoCount}}</text>
+        <text class="stat-label">照片数</text>
+      </view>
+      <view class="stat-card">
+        <text class="stat-icon">🎬</text>
+        <text class="stat-number">{{stats.videoCount}}</text>
+        <text class="stat-label">视频数</text>
+      </view>
+      <view class="stat-card">
+        <text class="stat-icon">❤️</text>
+        <text class="stat-number">{{stats.totalLikes}}</text>
+        <text class="stat-label">获赞数</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- Add Post Button -->
+  <view class="add-post-btn" bindtap="onAddClick">+</view>
+
+  <!-- Post View Modal -->
+  <view wx:if="{{showViewModal}}" class="modal" catchtap="onModalClose">
+    <view class="modal-content post-view" catchtap="">
+      <view class="modal-header">
+        <text class="modal-title">{{viewPost.title}}</text>
+        <view class="close-btn" bindtap="onModalClose">×</view>
+      </view>
+      <view class="post-type-badge type-{{viewPost.type}}">
+        {{viewPost.type === 'photo' ? '🖼️ 照片' : (viewPost.type === 'video' ? '🎬 视频' : '📝 文字')}}
+      </view>
+      <view class="post-view-date">{{viewPost.dateText}}</view>
+      <view class="post-media-large">
+        <image 
+          wx:if="{{viewPost.type === 'photo' && viewPost.fileID}}" 
+          src="{{viewPost.fileID}}" 
+          mode="aspectFit"
+          class="post-image-large"
+        />
+        <video 
+          wx:elif="{{viewPost.type === 'video' && viewPost.fileID}}" 
+          src="{{viewPost.fileID}}"
+          mode="aspectFit"
+          class="post-video-large"
+          controls="{{true}}"
+          autoplay="{{true}}"
+        />
+        <view wx:else class="post-emoji-large">
+          {{viewPost.type === 'photo' ? '📸' : (viewPost.type === 'video' ? '🎬' : '📝')}}
+        </view>
+      </view>
+      <view wx:if="{{viewPost.content}}" class="post-full-text">{{viewPost.content}}</view>
+      <view class="post-view-likes">❤️ {{viewPost.likes || 0}} 个赞</view>
+    </view>
+  </view>
+
+  <!-- Add Post Modal -->
+  <view wx:if="{{showAddModal}}" class="modal" catchtap="onModalClose">
+    <view class="modal-content" catchtap="">
+      <view class="modal-header">
+        <text class="modal-title">✨ 发布新动态</text>
+        <view class="close-btn" bindtap="onModalClose">×</view>
+      </view>
+      <view class="form-group">
+        <text class="form-label">标题</text>
+        <input 
+          class="form-input" 
+          placeholder="给这个可爱的瞬间起个名字..." 
+          value="{{newPost.title}}"
+          bindinput="onTitleInput"
+        />
+      </view>
+      <view class="form-group">
+        <text class="form-label">类型</text>
+        <picker 
+          mode="selector" 
+          range="{{typeOptions}}" 
+          range-key="label"
+          value="{{typeIndex}}"
+          bindchange="onTypeChange"
+        >
+          <view class="form-picker">{{typeOptions[typeIndex].label}}</view>
+        </picker>
+      </view>
+      <view wx:if="{{newPost.type !== 'text'}}" class="form-group">
+        <text class="form-label">上传图片/视频</text>
+        <view wx:if="{{!newPost.filePath}}" class="file-upload" bindtap="onChooseMedia">
+          <text class="file-upload-icon">📤</text>
+          <text class="file-upload-text">点击上传图片/视频</text>
+        </view>
+        <view wx:else class="preview-container">
+          <image 
+            wx:if="{{newPost.type === 'photo'}}" 
+            src="{{newPost.filePath}}" 
+            class="preview-image"
+            mode="aspectFill"
+          />
+          <video 
+            wx:else 
+            src="{{newPost.filePath}}" 
+            class="preview-video"
+            controls="{{true}}"
+          />
+          <view class="remove-media" bindtap="onRemoveMedia">×</view>
+        </view>
+      </view>
+      <view class="form-group">
+        <text class="form-label">描述</text>
+        <textarea 
+          class="form-textarea" 
+          placeholder="写下这个可爱瞬间的故事..." 
+          value="{{newPost.content}}"
+          bindinput="onContentInput"
+          auto-height
+          maxlength="500"
+        />
+      </view>
+      <button 
+        class="submit-btn" 
+        bindtap="onSubmit"
+        loading="{{submitting}}"
+        disabled="{{submitting}}"
+      >
+        {{submitting ? '发布中...' : '💕 发布动态'}}
+      </button>
+    </view>
+  </view>
+</view>
