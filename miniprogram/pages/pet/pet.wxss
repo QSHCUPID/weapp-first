@@ -61,11 +61,7 @@ page {
   overflow-x: auto;
 }
 
-.filter-bar::-webkit-scrollbar {
-  display: none;
-}
-
-.filter-btn {
+.filter-bar-item {
   padding: 18rpx 36rpx;
   border: 2rpx solid #ffd4e5;
   background: white;
@@ -77,7 +73,7 @@ page {
   box-shadow: 0 4rpx 15rpx rgba(0, 0, 0, 0.05);
 }
 
-.filter-btn.active {
+.filter-bar-item.active {
   background: linear-gradient(135deg, #ff9ecf, #d4a5ff);
   color: white;
   border-color: transparent;

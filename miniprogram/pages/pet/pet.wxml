@@ -12,22 +12,22 @@
   <!-- Filter Bar -->
   <view class="filter-bar">
     <view 
-      class="filter-btn {{currentFilter === 'all' ? 'active' : ''}}" 
+      class="filter-bar-item {{currentFilter === 'all' ? 'active' : ''}}" 
       data-filter="all"
       bindtap="onFilterChange"
     >全部</view>
     <view 
-      class="filter-btn {{currentFilter === 'photo' ? 'active' : ''}}" 
+      class="filter-bar-item {{currentFilter === 'photo' ? 'active' : ''}}" 
       data-filter="photo"
       bindtap="onFilterChange"
     >🖼️ 照片</view>
     <view 
-      class="filter-btn {{currentFilter === 'video' ? 'active' : ''}}" 
+      class="filter-bar-item {{currentFilter === 'video' ? 'active' : ''}}" 
       data-filter="video"
       bindtap="onFilterChange"
     >🎬 视频</view>
     <view 
-      class="filter-btn {{currentFilter === 'text' ? 'active' : ''}}" 
+      class="filter-bar-item {{currentFilter === 'text' ? 'active' : ''}}" 
       data-filter="text"
       bindtap="onFilterChange"
     >📝 文字</view>
