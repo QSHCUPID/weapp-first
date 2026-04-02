@@ -178,7 +178,6 @@
         <text class="form-label">标题</text>
         <input 
           class="form-input" 
-          placeholder="给这个可爱的瞬间起个名字..." 
           value="{{newPost.title}}"
           bindinput="onTitleInput"
         />
@@ -199,7 +198,6 @@
         <text class="form-label">上传图片/视频</text>
         <view wx:if="{{!newPost.filePath}}" class="file-upload" bindtap="onChooseMedia">
           <text class="file-upload-icon">📤</text>
-          <text class="file-upload-text">点击上传图片/视频</text>
         </view>
         <view wx:else class="preview-container">
           <image 
@@ -221,7 +219,6 @@
         <text class="form-label">描述</text>
         <textarea 
           class="form-textarea" 
-          placeholder="写下这个可爱瞬间的故事..." 
           value="{{newPost.content}}"
           bindinput="onContentInput"
           auto-height
