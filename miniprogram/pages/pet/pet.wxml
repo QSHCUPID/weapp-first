@@ -11,23 +11,23 @@
 
   <!-- Filter Bar -->
   <view class="filter-bar">
-    <view 
-      class="filter-bar-item {{currentFilter === 'all' ? 'active' : ''}}" 
+    <view
+      class="filter-bar-item {{currentFilter === 'all' ? 'active' : ''}}"
       data-filter="all"
       bindtap="onFilterChange"
     >全部</view>
-    <view 
-      class="filter-bar-item {{currentFilter === 'photo' ? 'active' : ''}}" 
+    <view
+      class="filter-bar-item {{currentFilter === 'photo' ? 'active' : ''}}"
       data-filter="photo"
       bindtap="onFilterChange"
     >🖼️ 照片</view>
-    <view 
-      class="filter-bar-item {{currentFilter === 'video' ? 'active' : ''}}" 
+    <view
+      class="filter-bar-item {{currentFilter === 'video' ? 'active' : ''}}"
       data-filter="video"
       bindtap="onFilterChange"
     >🎬 视频</view>
-    <view 
-      class="filter-bar-item {{currentFilter === 'text' ? 'active' : ''}}" 
+    <view
+      class="filter-bar-item {{currentFilter === 'text' ? 'active' : ''}}"
       data-filter="text"
       bindtap="onFilterChange"
     >📝 文字</view>
@@ -52,25 +52,25 @@
     </view>
 
     <view wx:else class="posts-grid">
-      <view 
-        class="post-card" 
-        wx:for="{{filteredPosts}}" 
+      <view
+        class="post-card"
+        wx:for="{{filteredPosts}}"
         wx:key="_id"
         data-id="{{item._id}}"
         bindtap="onPostClick"
       >
         <view class="delete-btn" data-id="{{item._id}}" catchtap="onDeleteClick">🗑️</view>
-        
+
         <view class="post-media">
-          <image 
-            wx:if="{{item.type === 'photo' && item.fileID}}" 
-            src="{{item.fileID}}" 
+          <image
+            wx:if="{{item.type === 'photo' && item.displayUrl}}"
+            src="{{item.displayUrl}}"
             mode="aspectFill"
             class="post-image"
           />
-          <video 
-            wx:elif="{{item.type === 'video' && item.fileID}}" 
-            src="{{item.fileID}}"
+          <video
+            wx:elif="{{item.type === 'video' && item.displayUrl}}"
+            src="{{item.displayUrl}}"
             mode="aspectFill"
             class="post-video"
             show-center-play-btn="{{true}}"
@@ -145,14 +145,14 @@
       <view class="post-view-date">{{viewPost.dateText}}</view>
       <view class="post-media-large">
         <image 
-          wx:if="{{viewPost.type === 'photo' && viewPost.fileID}}" 
-          src="{{viewPost.fileID}}" 
+          wx:if="{{viewPost.type === 'photo' && viewPost.displayUrl}}" 
+          src="{{viewPost.displayUrl}}"
           mode="aspectFit"
           class="post-image-large"
         />
         <video 
-          wx:elif="{{viewPost.type === 'video' && viewPost.fileID}}" 
-          src="{{viewPost.fileID}}"
+          wx:elif="{{viewPost.type === 'video' && viewPost.displayUrl}}" 
+          src="{{viewPost.displayUrl}}"
           mode="aspectFit"
           class="post-video-large"
           controls="{{true}}"
@@ -176,17 +176,17 @@
       </view>
       <view class="form-group">
         <text class="form-label">标题</text>
-        <input 
-          class="form-input" 
+        <input
+          class="form-input"
           value="{{newPost.title}}"
           bindinput="onTitleInput"
         />
       </view>
       <view class="form-group">
         <text class="form-label">类型</text>
-        <picker 
-          mode="selector" 
-          range="{{typeOptions}}" 
+        <picker
+          mode="selector"
+          range="{{typeOptions}}"
           range-key="label"
           value="{{typeIndex}}"
           bindchange="onTypeChange"
@@ -200,15 +200,15 @@
           <text class="file-upload-icon">📤</text>
         </view>
         <view wx:else class="preview-container">
-          <image 
-            wx:if="{{newPost.type === 'photo'}}" 
-            src="{{newPost.filePath}}" 
+          <image
+            wx:if="{{newPost.type === 'photo'}}"
+            src="{{newPost.filePath}}"
             class="preview-image"
             mode="aspectFill"
           />
-          <video 
-            wx:else 
-            src="{{newPost.filePath}}" 
+          <video
+            wx:else
+            src="{{newPost.filePath}}"
             class="preview-video"
             controls="{{true}}"
           />
@@ -217,16 +217,16 @@
       </view>
       <view class="form-group">
         <text class="form-label">描述</text>
-        <textarea 
-          class="form-textarea" 
+        <textarea
+          class="form-textarea"
           value="{{newPost.content}}"
           bindinput="onContentInput"
           auto-height
           maxlength="500"
         />
       </view>
-      <button 
-        class="submit-btn" 
+      <button
+        class="submit-btn"
         bindtap="onSubmit"
         loading="{{submitting}}"
         disabled="{{submitting}}"

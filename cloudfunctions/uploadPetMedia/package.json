@@ -1,0 +1,9 @@
+{
+  "name": "uploadPetMedia",
+  "version": "1.0.0",
+  "description": "上传宠物专栏媒体文件",
+  "main": "index.js",
+  "dependencies": {
+    "wx-server-sdk": "~2.6.3"
+  }
+}

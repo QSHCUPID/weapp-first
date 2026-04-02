@@ -48,16 +48,46 @@ Page({
     }
   },
 
+  async getTempUrl(fileID) {
+    try {
+      const res = await wx.cloud.callFunction({
+        name: 'uploadPetMedia',
+        data: {
+          fileID: fileID,
+          action: 'getTempUrl'
+        }
+      });
+      
+      if (res.result.success) {
+        return res.result.tempFileURL;
+      }
+      return fileID;
+    } catch (err) {
+      console.error('获取临时URL失败:', err);
+      return fileID;
+    }
+  },
+
   async loadPosts() {
     this.setData({ loading: true });
     
     try {
       const { data } = await DB.orderBy('createdAt', 'desc').get();
       
-      const posts = data.map(post => ({
-        ...post,
-        dateText: this.formatDate(post.createdAt)
-      }));
+      const posts = [];
+      for (const post of data) {
+        const postWithUrl = {
+          ...post,
+          dateText: this.formatDate(post.createdAt),
+          displayUrl: post.fileID
+        };
+        
+        if (post.fileID) {
+          postWithUrl.displayUrl = await this.getTempUrl(post.fileID);
+        }
+        
+        posts.push(postWithUrl);
+      }
       
       this.setData({ posts });
       this.updateStats();
@@ -68,7 +98,7 @@ Page({
       if (err.errCode === -502003) {
         wx.showModal({
           title: '权限提示',
-          content: '请在微信开发者工具-云开发控制台-数据库-pet_posts集合-权限设置中，将权限改为"所有用户可读，仅创建者可写"；同时在云存储-权限设置中，将权限改为"所有用户可读，仅创建者可写"',
+          content: '请在微信开发者工具-云开发控制台-数据库-pet_posts集合-权限设置中，将权限改为"所有用户可读，仅创建者可写"',
           showCancel: false
         });
       } else {
@@ -110,11 +140,15 @@ Page({
     this.applyFilter();
   },
 
-  onPostClick(e) {
+  async onPostClick(e) {
     const id = e.currentTarget.dataset.id;
     const post = this.data.posts.find(p => p._id === id);
     if (post) {
-      this.setData({ viewPost: post, showViewModal: true });
+      let viewPost = { ...post };
+      if (post.fileID && !post.displayUrl) {
+        viewPost.displayUrl = await this.getTempUrl(post.fileID);
+      }
+      this.setData({ viewPost, showViewModal: true });
     }
   },
 
