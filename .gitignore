@@ -1,0 +1,6 @@
+# 微信开发者工具
+.project
+*.log
+
+# 私密配置
+config.secret.js
