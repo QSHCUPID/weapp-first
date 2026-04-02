@@ -1,4 +1,5 @@
 const DB = wx.cloud.database().collection('pet_posts');
+const _ = wx.cloud.database().command;
 
 Page({
   data: {
@@ -65,10 +66,19 @@ Page({
       this.applyFilter();
     } catch (err) {
       console.error('加载动态失败:', err);
-      wx.showToast({
-        title: '加载失败',
-        icon: 'none'
-      });
+      
+      if (err.errCode === -502003) {
+        wx.showModal({
+          title: '权限提示',
+          content: '请在微信开发者工具-云开发控制台-数据库-pet_posts集合-权限设置中，将权限改为"所有用户可读，仅创建者可写"',
+          showCancel: false
+        });
+      } else {
+        wx.showToast({
+          title: '加载失败',
+          icon: 'none'
+        });
+      }
     }
     
     this.setData({ loading: false });

@@ -281,7 +281,7 @@ page {
 .stats-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 25rpx;
+  gap: 20rpx;
 }
 
 .stat-card {
@@ -413,7 +413,7 @@ page {
   width: 100%;
   padding: 28rpx;
   border: 2rpx solid #ffd4e5;
-  background: #fff5f8;
+  background: white;
   color: #333;
   border-radius: 16rpx;
   font-size: 28rpx;
