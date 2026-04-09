@@ -202,6 +202,28 @@ Page({
     }
   },
 
+  // 获取图片临时链接
+  async getTempUrl(fileID) {
+    if (!fileID) return '';
+    try {
+      const res = await wx.cloud.callFunction({
+        name: 'gardenUnion',
+        data: {
+          fileID: fileID,
+          action: 'getTempUrl'
+        }
+      });
+      
+      if (res.result.success) {
+        return res.result.tempFileURL;
+      }
+      return fileID;
+    } catch (err) {
+      console.error('获取临时URL失败:', err);
+      return fileID;
+    }
+  },
+
   // 加载花朵列表
   async loadFlowers() {
     wx.showLoading({ title: '加载中...' });
@@ -220,7 +242,22 @@ Page({
       });
       
       if (result.success) {
-        this.setData({ flowers: result.flowers || [] });
+        // 为每个花朵获取临时图片链接
+        const flowers = [];
+        for (const flower of result.flowers || []) {
+          const flowerWithUrl = {
+            ...flower,
+            displayImage: flower.image
+          };
+          
+          if (flower.image) {
+            flowerWithUrl.displayImage = await this.getTempUrl(flower.image);
+          }
+          
+          flowers.push(flowerWithUrl);
+        }
+        
+        this.setData({ flowers });
       }
     } catch (err) {
       console.error('加载花朵失败:', err);
@@ -341,7 +378,7 @@ Page({
       
       // 上传到云存储
       wx.showLoading({ title: '上传中...' });
-      const cloudPath = `flowers/${Date.now()}-${Math.random().toString(36).substr(2, 9)}.jpg`;
+      const cloudPath = `garden-union-flowers/${Date.now()}-${Math.random().toString(36).substr(2, 9)}${this.getFileExt(compressedImage)}`;
       const uploadRes = await wx.cloud.uploadFile({
         cloudPath: cloudPath,
         filePath: compressedImage
@@ -459,5 +496,11 @@ Page({
     } finally {
       wx.hideLoading();
     }
+  },
+
+  // 获取文件扩展名
+  getFileExt(filePath) {
+    const ext = filePath.split('.').pop();
+    return ext ? `.${ext}` : '.jpg';
   }
 })

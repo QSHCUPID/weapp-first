@@ -60,7 +60,7 @@
 <!-- 花朵列表 -->
 <view class="flower-list">
   <view class="flower-item" wx:for="{{flowers}}" wx:key="_id">
-    <image class="flower-image" src="{{item.image}}" mode="aspectFill" />
+    <image class="flower-image" src="{{item.displayImage}}" mode="aspectFill" />
     
     <view class="flower-info">
       <view class="flower-name-row">

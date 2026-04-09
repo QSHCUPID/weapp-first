@@ -49,6 +49,8 @@ exports.main = async (event, context) => {
         return await unmarkOwned(OPENID, event.flowerId, event.selectedUserId, isAdmin)
       case 'addFlower':
         return await addFlower(OPENID, event.flower)
+      case 'getTempUrl':
+        return await getTempUrl(event.fileID)
       default:
         return { success: false, message: '未知操作' }
     }
@@ -408,4 +410,27 @@ async function addFlower(openid, flower) {
   })
   
   return { success: true, flowerId: result._id }
+}
+
+// 获取图片临时链接
+async function getTempUrl(fileID) {
+  if (!fileID) {
+    return { success: false, message: 'fileID 不能为空' }
+  }
+  
+  try {
+    const result = await cloud.getTempFileURL({
+      fileList: [fileID]
+    })
+    return {
+      success: true,
+      tempFileURL: result.fileList[0].tempFileURL
+    }
+  } catch (err) {
+    console.error('获取临时链接失败:', err)
+    return {
+      success: false,
+      message: err.message
+    }
+  }
 }
