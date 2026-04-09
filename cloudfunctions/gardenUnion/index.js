@@ -183,7 +183,7 @@ async function inputUser(openid, gameName, isAdmin) {
 
 // 获取花朵列表
 async function getFlowers(openid, params, isAdmin) {
-  const { searchKeyword, viewFilter, minScore, maxScore, sortBy, selectedUserId } = params
+  const { searchKeyword, viewFilter, minScore, maxScore, sortBy, selectedUserId, filterMode = 'union' } = params
   
   // 构建查询条件
   let query = db.collection(COLLECTIONS.FLOWERS)
@@ -216,33 +216,38 @@ async function getFlowers(openid, params, isAdmin) {
     userMap[u._id] = u.gameName
   })
   
-  // 确定要检查的用户ID
+  // 确定要检查的用户ID（个人模式用）
   let targetUserId = null
-  if (isAdmin && selectedUserId) {
-    targetUserId = selectedUserId
-  } else {
-    // 获取当前用户的ID
-    const { data: currentUsers } = await db.collection(COLLECTIONS.USERS)
-      .where({ openid })
-      .get()
-    if (currentUsers.length > 0) {
-      targetUserId = currentUsers[0]._id
+  if (filterMode === 'personal') {
+    if (isAdmin && selectedUserId) {
+      targetUserId = selectedUserId
+    } else {
+      // 获取当前用户的ID
+      const { data: currentUsers } = await db.collection(COLLECTIONS.USERS)
+        .where({ openid })
+        .get()
+      if (currentUsers.length > 0) {
+        targetUserId = currentUsers[0]._id
+      }
     }
   }
   
-  // 获取目标用户的拥有记录和培育记录
-  const { data: targetOwnerships } = targetUserId 
-    ? await db.collection(COLLECTIONS.OWNERSHIPS)
-        .where({ userId: targetUserId })
-        .get()
-    : { data: [] }
+  // 获取目标用户的拥有记录和培育记录（个人模式用）
+  let targetOwnedFlowerIds = new Set()
+  let targetGrowingFlowerIds = new Set()
   
-  const targetOwnedFlowerIds = new Set(
-    targetOwnerships.filter(o => o.status === 'owned').map(o => o.flowerId)
-  )
-  const targetGrowingFlowerIds = new Set(
-    targetOwnerships.filter(o => o.status === 'growing').map(o => o.flowerId)
-  )
+  if (filterMode === 'personal' && targetUserId) {
+    const { data: targetOwnerships } = await db.collection(COLLECTIONS.OWNERSHIPS)
+      .where({ userId: targetUserId })
+      .get()
+    
+    targetOwnedFlowerIds = new Set(
+      targetOwnerships.filter(o => o.status === 'owned').map(o => o.flowerId)
+    )
+    targetGrowingFlowerIds = new Set(
+      targetOwnerships.filter(o => o.status === 'growing').map(o => o.flowerId)
+    )
+  }
   
   // 获取所有花朵的拥有记录
   const { data: allOwnerships } = await db.collection(COLLECTIONS.OWNERSHIPS).get()
@@ -254,22 +259,42 @@ async function getFlowers(openid, params, isAdmin) {
     const ownerIds = new Set(flowerOwnerships.map(o => o.userId))
     const owners = Array.from(ownerIds).map(id => userMap[id]).filter(Boolean)
     
+    // 根据模式设置 isOwned 和 isGrowing
+    let isOwned = false
+    let isGrowing = false
+    let unionHasOwned = owners.length > 0
+    
+    if (filterMode === 'personal') {
+      isOwned = targetOwnedFlowerIds.has(flower._id)
+      isGrowing = targetGrowingFlowerIds.has(flower._id)
+    }
+    
     return {
       ...flower,
-      isOwned: targetOwnedFlowerIds.has(flower._id),
-      isGrowing: targetGrowingFlowerIds.has(flower._id),
+      isOwned: filterMode === 'personal' ? isOwned : unionHasOwned,
+      isGrowing: filterMode === 'personal' ? isGrowing : false,
       ownerCount: owners.length,
       owners: owners
     }
   })
   
   // 视图过滤
-  if (viewFilter === 'owned') {
-    resultFlowers = resultFlowers.filter(f => f.isOwned)
-  } else if (viewFilter === 'growing') {
-    resultFlowers = resultFlowers.filter(f => f.isGrowing)
-  } else if (viewFilter === 'notOwned') {
-    resultFlowers = resultFlowers.filter(f => !f.isOwned && !f.isGrowing)
+  if (filterMode === 'union') {
+    // 工会模式：只区分已拥有/未拥有
+    if (viewFilter === 'owned') {
+      resultFlowers = resultFlowers.filter(f => f.ownerCount > 0)
+    } else if (viewFilter === 'notOwned') {
+      resultFlowers = resultFlowers.filter(f => f.ownerCount === 0)
+    }
+  } else {
+    // 个人模式：区分已拥有/培育中/未拥有
+    if (viewFilter === 'owned') {
+      resultFlowers = resultFlowers.filter(f => f.isOwned)
+    } else if (viewFilter === 'growing') {
+      resultFlowers = resultFlowers.filter(f => f.isGrowing)
+    } else if (viewFilter === 'notOwned') {
+      resultFlowers = resultFlowers.filter(f => !f.isOwned && !f.isGrowing)
+    }
   }
   
   // 排序

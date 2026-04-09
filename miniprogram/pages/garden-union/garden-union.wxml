@@ -30,10 +30,43 @@
 
 <!-- 过滤区域 -->
 <view class="filter-section">
+  <!-- 过滤模式切换（管理员选择admin时不显示个人拥有） -->
+  <view class="filter-mode-row" wx:if="{{!isAdmin || selectedGameName !== 'admin'}}">
+    <view 
+      class="filter-mode-btn {{filterMode === 'union' ? 'active' : ''}}" 
+      data-mode="union"
+      bindtap="onFilterModeChange"
+    >
+      工会拥有
+    </view>
+    <view 
+      class="filter-mode-btn {{filterMode === 'personal' ? 'active' : ''}}" 
+      data-mode="personal"
+      bindtap="onFilterModeChange"
+    >
+      个人拥有
+    </view>
+  </view>
+  
   <view class="filter-row">
     <view class="filter-item">
       <text class="filter-label">视图：</text>
-      <picker mode="selector" range="{{['全部', '已拥有', '培育中', '未拥有']}}" bindchange="onViewFilterChange">
+      <!-- 工会拥有：只有全部、已拥有、未拥有 -->
+      <picker 
+        wx:if="{{filterMode === 'union'}}"
+        mode="selector" 
+        range="{{['全部', '已拥有', '未拥有']}}" 
+        bindchange="onViewFilterChange"
+      >
+        <view class="picker">{{['全部', '已拥有', '未拥有'][viewFilter === 'all' ? 0 : viewFilter === 'owned' ? 1 : 2]}}</view>
+      </picker>
+      <!-- 个人拥有：全部、已拥有、培育中、未拥有 -->
+      <picker 
+        wx:if="{{filterMode === 'personal'}}"
+        mode="selector" 
+        range="{{['全部', '已拥有', '培育中', '未拥有']}}" 
+        bindchange="onViewFilterChange"
+      >
         <view class="picker">{{['全部', '已拥有', '培育中', '未拥有'][viewFilter === 'all' ? 0 : viewFilter === 'owned' ? 1 : viewFilter === 'growing' ? 2 : 3]}}</view>
       </picker>
     </view>
@@ -80,7 +113,8 @@
       </view>
     </view>
     
-    <view class="flower-actions">
+    <!-- 只有个人模式下才显示操作按钮 -->
+    <view class="flower-actions" wx:if="{{filterMode === 'personal'}}">
       <button 
         class="action-btn grow-btn {{item.isGrowing ? 'active' : ''}}" 
         data-flower="{{item}}" 

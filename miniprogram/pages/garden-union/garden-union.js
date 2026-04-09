@@ -14,6 +14,9 @@ Page({
     // 所有游戏昵称列表（管理员用）
     allUsers: [],
     
+    // 过滤模式：union（工会）或 personal（个人）
+    filterMode: 'union',
+    
     // 搜索和过滤
     searchKeyword: '',
     viewFilter: 'all', // all, owned, growing, notOwned
@@ -223,6 +226,16 @@ Page({
     }
   },
 
+  // 切换过滤模式
+  onFilterModeChange(e) {
+    const mode = e.currentTarget.dataset.mode;
+    this.setData({ 
+      filterMode: mode,
+      viewFilter: 'all' // 切换模式时重置视图过滤
+    });
+    this.loadFlowers();
+  },
+
   // 加载花朵列表
   async loadFlowers() {
     wx.showLoading({ title: '加载中...' });
@@ -231,6 +244,7 @@ Page({
         name: 'gardenUnion',
         data: {
           action: 'getFlowers',
+          filterMode: this.data.filterMode,
           searchKeyword: this.data.searchKeyword,
           viewFilter: this.data.viewFilter,
           minScore: this.data.minScore ? parseInt(this.data.minScore) : null,
