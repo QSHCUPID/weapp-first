@@ -7,12 +7,6 @@ cloud.init({
 const db = cloud.database()
 const _ = db.command
 
-// 超级管理员的 openid 列表（大帅可以在这里添加其他管理员）
-const ADMIN_OPENIDS = [
-  // 大帅的 openid 会在这里，需要在云开发控制台获取后添加
-  // '你的openid',
-]
-
 // 数据库集合名称
 const COLLECTIONS = {
   USERS: 'gu_users',      // 用户表
@@ -31,8 +25,8 @@ exports.main = async (event, context) => {
     // 确保数据库集合存在（如果不存在会自动创建）
     await ensureCollections()
     
-    // 检查是否是管理员
-    const isAdmin = ADMIN_OPENIDS.includes(OPENID) || await checkIsAdmin(OPENID)
+    // 检查是否是管理员（只通过数据库用户表的 role 字段判断）
+    const isAdmin = await checkIsAdmin(OPENID)
     
     switch (action) {
       case 'getCurrentUser':
@@ -90,24 +84,6 @@ async function getCurrentUser(openid, isAdmin) {
   let user = null
   if (data.length > 0) {
     user = data[0]
-  } else if (isAdmin || ADMIN_OPENIDS.includes(openid)) {
-    // 如果是管理员但用户表中没有记录，创建一个管理员用户
-    const now = new Date()
-    const result = await db.collection(COLLECTIONS.USERS).add({
-      data: {
-        openid,
-        role: 'admin',
-        gameName: 'admin',
-        createdAt: now,
-        updatedAt: now
-      }
-    })
-    user = {
-      _id: result._id,
-      openid,
-      role: 'admin',
-      gameName: 'admin'
-    }
   }
   
   return { success: true, user }
