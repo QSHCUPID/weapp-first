@@ -1,0 +1,159 @@
+<!-- 顶部区域 -->
+<view class="header">
+  <view class="union-name">🌸 蕊香阁</view>
+  
+  <view class="header-right">
+    <button class="input-btn" bindtap="onTapInput">录入</button>
+    <view class="user-info">
+      <text class="user-game-name">{{userGameName || '未录入'}}</text>
+    </view>
+  </view>
+</view>
+
+<!-- 搜索区域 -->
+<view class="search-section">
+  <view class="search-box">
+    <input 
+      class="search-input" 
+      placeholder="搜索花朵名称..." 
+      value="{{searchKeyword}}"
+      bindinput="onSearchInput"
+      bindconfirm="onSearchConfirm"
+    />
+    <view class="search-icon">🔍</view>
+  </view>
+</view>
+
+<!-- 过滤区域 -->
+<view class="filter-section">
+  <view class="filter-row">
+    <view class="filter-item">
+      <text class="filter-label">视图：</text>
+      <picker mode="selector" range="{{['全部', '已拥有', '未拥有', '待培育']}}" bindchange="onViewFilterChange">
+        <view class="picker">{{['全部', '已拥有', '未拥有', '待培育'][viewFilter === 'all' ? 0 : viewFilter === 'owned' ? 1 : viewFilter === 'notOwned' ? 2 : 3]}}</view>
+      </picker>
+    </view>
+    
+    <view class="filter-item">
+      <text class="filter-label">排序：</text>
+      <picker mode="selector" range="{{['分数降序', '分数升序', '名称']}}" bindchange="onSortChange">
+        <view class="picker">{{['分数降序', '分数升序', '名称'][sortBy === 'scoreDesc' ? 0 : sortBy === 'scoreAsc' ? 1 : 2]}}</view>
+      </picker>
+    </view>
+  </view>
+  
+  <view class="filter-row">
+    <view class="filter-item">
+      <text class="filter-label">竞赛分：</text>
+      <input class="score-input" type="number" placeholder="最低" value="{{minScore}}" bindinput="onMinScoreInput" />
+      <text class="score-separator">-</text>
+      <input class="score-input" type="number" placeholder="最高" value="{{maxScore}}" bindinput="onMaxScoreInput" />
+      <button class="apply-btn" size="mini" bindtap="onApplyScoreFilter">应用</button>
+    </view>
+  </view>
+</view>
+
+<!-- 花朵列表 -->
+<view class="flower-list">
+  <view class="flower-item" wx:for="{{flowers}}" wx:key="_id">
+    <image class="flower-image" src="{{item.image}}" mode="aspectFill" />
+    
+    <view class="flower-info">
+      <view class="flower-name-row">
+        <text class="flower-name">{{item.name}}</text>
+        <text class="flower-type">{{item.type}}</text>
+      </view>
+      
+      <view class="flower-meta">
+        <text class="flower-score">⭐ {{item.score}}分</text>
+        <text class="flower-owner-count">👥 {{item.ownerCount}}人拥有</text>
+      </view>
+      
+      <view class="flower-owners" wx:if="{{item.owners && item.owners.length > 0}}">
+        <view class="owner-tag" wx:for="{{item.owners}}" wx:for-item="owner" wx:key="*this">
+          {{owner}}
+        </view>
+      </view>
+    </view>
+    
+    <button 
+      class="mark-btn {{item.isOwned ? 'owned' : ''}}" 
+      data-flower="{{item}}" 
+      bindtap="onMarkOwned"
+    >
+      {{item.isOwned ? '✔' : '拥有'}}
+    </button>
+  </view>
+  
+  <view class="empty-tip" wx:if="{{flowers.length === 0}}">
+    暂无花朵数据～
+  </view>
+</view>
+
+<!-- 底部添加按钮 -->
+<view class="add-btn-area" bindtap="onTapAddFlower">
+  <view class="add-btn">
+    <text class="add-icon">+</text>
+    <text class="add-text">录入花朵</text>
+  </view>
+</view>
+
+<!-- 录入用户弹窗（管理员用） -->
+<view class="modal" wx:if="{{showInputModal}}">
+  <view class="modal-content">
+    <view class="modal-title">录入用户</view>
+    <input 
+      class="modal-input" 
+      placeholder="请输入游戏昵称" 
+      value="{{inputGameName}}"
+      bindinput="e => setData({inputGameName: e.detail.value})"
+    />
+    <view class="modal-buttons">
+      <button class="modal-btn cancel" bindtap="e => setData({showInputModal: false})">取消</button>
+      <button class="modal-btn confirm" bindtap="onConfirmInput">确认</button>
+    </view>
+  </view>
+</view>
+
+<!-- 添加花朵弹窗 -->
+<view class="modal" wx:if="{{showAddFlowerModal}}">
+  <view class="modal-content add-flower-modal">
+    <view class="modal-title">录入花朵信息</view>
+    
+    <view class="form-item">
+      <text class="form-label">花朵图片：</text>
+      <view class="image-upload" bindtap="onChooseImage">
+        <image wx:if="{{newFlower.image}}" class="preview-image" src="{{newFlower.image}}" mode="aspectFill" />
+        <view wx:else class="upload-placeholder">
+          <text class="upload-icon">📷</text>
+          <text class="upload-text">点击上传</text>
+        </view>
+      </view>
+    </view>
+    
+    <view class="form-item">
+      <text class="form-label">花朵名称：</text>
+      <input class="form-input" placeholder="请输入花朵名称" value="{{newFlower.name}}" bindinput="onFlowerNameInput" />
+    </view>
+    
+    <view class="form-item">
+      <text class="form-label">竞赛分数：</text>
+      <input class="form-input" type="number" placeholder="请输入竞赛分数" value="{{newFlower.score}}" bindinput="onFlowerScoreInput" />
+    </view>
+    
+    <view class="form-item">
+      <text class="form-label">花朵类型：</text>
+      <picker mode="selector" range="{{flowerTypes}}" bindchange="onFlowerTypeChange">
+        <view class="picker">{{newFlower.type}}</view>
+      </picker>
+    </view>
+    
+    <view class="modal-buttons">
+      <button class="modal-btn cancel" bindtap="e => setData({showAddFlowerModal: false})">取消</button>
+      <button class="modal-btn confirm" bindtap="onConfirmAddFlower">确认</button>
+    </view>
+  </view>
+</view>
+
+<!-- 压缩图片用的隐藏画布 -->
+<canvas canvas-id="compressCanvas" style="width: 400px; height: 400px; position: absolute; left: -9999px;"></canvas>

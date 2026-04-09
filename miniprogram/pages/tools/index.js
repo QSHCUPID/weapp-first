@@ -1,43 +1,36 @@
+const config = require('../../config.js')
+
 Page({
   data: {
-    tools: [
-      {
-        id: 'pet',
-        name: '棠棠成长日记',
-        icon: '🐕',
-        description: '记录毛茸茸的每一天',
-        path: '/pages/pet/pet',
-        comingSoon: false
-      },
-      {
-        id: 'calculator',
-        name: '计算器',
-        icon: '🧮',
-        description: '简单好用的计算器',
-        path: '',
-        comingSoon: true
-      },
-      {
-        id: 'todo',
-        name: '待办清单',
-        icon: '📝',
-        description: '管理你的待办事项',
-        path: '',
-        comingSoon: true
-      },
-      {
-        id: 'weather',
-        name: '天气预报',
-        icon: '🌤️',
-        description: '实时天气查询',
-        path: '',
-        comingSoon: true
-      }
-    ]
+    tools: []
   },
 
   onLoad() {
     console.log('🛠️ 工具大集合加载');
+    this.loadTools();
+  },
+
+  // 从配置加载工具列表
+  loadTools() {
+    const tools = [];
+    
+    // 遍历配置中的工具
+    for (const [id, toolConfig] of Object.entries(config.tools)) {
+      // 只显示 enabled 为 true 的工具
+      if (toolConfig.enabled) {
+        tools.push({
+          id: id,
+          name: toolConfig.name,
+          icon: toolConfig.icon,
+          description: toolConfig.description,
+          path: toolConfig.path,
+          comingSoon: toolConfig.comingSoon || false
+        });
+      }
+    }
+    
+    this.setData({ tools });
+    console.log('✅ 加载了', tools.length, '个工具');
   },
 
   openTool(e) {

@@ -1,0 +1,382 @@
+/* 整体样式 */
+page {
+  background-color: #f5f7fa;
+  padding-bottom: 100px;
+}
+
+/* 顶部区域 */
+.header {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.union-name {
+  color: white;
+  font-size: 20px;
+  font-weight: bold;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.input-btn {
+  background-color: white;
+  color: #667eea;
+  border: none;
+  border-radius: 20px;
+  padding: 8px 16px;
+  font-size: 14px;
+}
+
+.user-info {
+  background-color: rgba(255,255,255,0.2);
+  padding: 8px 12px;
+  border-radius: 15px;
+}
+
+.user-game-name {
+  color: white;
+  font-size: 14px;
+}
+
+/* 搜索区域 */
+.search-section {
+  padding: 15px;
+  background-color: white;
+}
+
+.search-box {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.search-input {
+  flex: 1;
+  background-color: #f5f7fa;
+  border-radius: 20px;
+  padding: 12px 40px 12px 15px;
+  font-size: 14px;
+}
+
+.search-icon {
+  position: absolute;
+  right: 15px;
+  font-size: 16px;
+}
+
+/* 过滤区域 */
+.filter-section {
+  background-color: white;
+  padding: 15px;
+  margin-top: 10px;
+}
+
+.filter-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.filter-row:last-child {
+  margin-bottom: 0;
+}
+
+.filter-item {
+  display: flex;
+  align-items: center;
+  flex: 1;
+}
+
+.filter-label {
+  font-size: 14px;
+  color: #666;
+  margin-right: 8px;
+}
+
+.picker {
+  background-color: #f5f7fa;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 14px;
+  color: #333;
+}
+
+.score-input {
+  width: 60px;
+  background-color: #f5f7fa;
+  padding: 6px 8px;
+  border-radius: 4px;
+  font-size: 14px;
+  text-align: center;
+}
+
+.score-separator {
+  margin: 0 8px;
+  color: #999;
+}
+
+.apply-btn {
+  background-color: #667eea;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 6px 12px;
+  font-size: 12px;
+  margin-left: 8px;
+}
+
+/* 花朵列表 */
+.flower-list {
+  padding: 15px;
+}
+
+.flower-item {
+  background-color: white;
+  border-radius: 12px;
+  padding: 15px;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+.flower-image {
+  width: 70px;
+  height: 70px;
+  border-radius: 8px;
+  margin-right: 12px;
+  background-color: #f5f7fa;
+}
+
+.flower-info {
+  flex: 1;
+}
+
+.flower-name-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.flower-name {
+  font-size: 16px;
+  font-weight: bold;
+  color: #333;
+  margin-right: 8px;
+}
+
+.flower-type {
+  background-color: #e8f5e9;
+  color: #2e7d32;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 11px;
+}
+
+.flower-meta {
+  display: flex;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.flower-score {
+  font-size: 13px;
+  color: #ff9800;
+  margin-right: 12px;
+}
+
+.flower-owner-count {
+  font-size: 13px;
+  color: #666;
+}
+
+.flower-owners {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.owner-tag {
+  background-color: #f3e5f5;
+  color: #7b1fa2;
+  padding: 3px 8px;
+  border-radius: 10px;
+  font-size: 11px;
+}
+
+.mark-btn {
+  background-color: #e0e0e0;
+  color: #666;
+  border: none;
+  border-radius: 20px;
+  padding: 8px 16px;
+  font-size: 13px;
+  margin-left: 10px;
+}
+
+.mark-btn.owned {
+  background-color: #4caf50;
+  color: white;
+}
+
+.empty-tip {
+  text-align: center;
+  color: #999;
+  padding: 40px 0;
+  font-size: 14px;
+}
+
+/* 底部添加按钮 */
+.add-btn-area {
+  position: fixed;
+  bottom: 20px;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: center;
+}
+
+.add-btn {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border-radius: 30px;
+  padding: 12px 30px;
+  display: flex;
+  align-items: center;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+.add-icon {
+  font-size: 24px;
+  margin-right: 8px;
+  line-height: 1;
+}
+
+.add-text {
+  font-size: 16px;
+  font-weight: bold;
+}
+
+/* 弹窗 */
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0,0,0,0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background-color: white;
+  border-radius: 16px;
+  padding: 24px;
+  width: 80%;
+  max-width: 400px;
+}
+
+.add-flower-modal {
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+.modal-title {
+  font-size: 18px;
+  font-weight: bold;
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.modal-input {
+  width: 100%;
+  background-color: #f5f7fa;
+  border-radius: 8px;
+  padding: 12px;
+  font-size: 14px;
+  margin-bottom: 20px;
+}
+
+.form-item {
+  margin-bottom: 16px;
+}
+
+.form-label {
+  display: block;
+  font-size: 14px;
+  color: #666;
+  margin-bottom: 8px;
+}
+
+.form-input {
+  width: 100%;
+  background-color: #f5f7fa;
+  border-radius: 8px;
+  padding: 12px;
+  font-size: 14px;
+}
+
+.image-upload {
+  width: 100px;
+  height: 100px;
+  background-color: #f5f7fa;
+  border-radius: 8px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+}
+
+.preview-image {
+  width: 100%;
+  height: 100%;
+}
+
+.upload-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.upload-icon {
+  font-size: 32px;
+  margin-bottom: 4px;
+}
+
+.upload-text {
+  font-size: 12px;
+  color: #999;
+}
+
+.modal-buttons {
+  display: flex;
+  gap: 12px;
+}
+
+.modal-btn {
+  flex: 1;
+  border: none;
+  border-radius: 8px;
+  padding: 12px;
+  font-size: 14px;
+}
+
+.modal-btn.cancel {
+  background-color: #e0e0e0;
+  color: #666;
+}
+
+.modal-btn.confirm {
+  background-color: #667eea;
+  color: white;
+}

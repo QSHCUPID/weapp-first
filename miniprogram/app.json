@@ -1,6 +1,7 @@
 {
   "pages": [
     "pages/tools/index",
+    "pages/garden-union/garden-union",
     "pages/pet/pet",
     "pages/index/index",
     "pages/example/index"
