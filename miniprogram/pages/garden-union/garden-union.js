@@ -16,7 +16,7 @@ Page({
     
     // 搜索和过滤
     searchKeyword: '',
-    viewFilter: 'all', // all, owned, notOwned, toGrow
+    viewFilter: 'all', // all, owned, growing, notOwned
     minScore: '',
     maxScore: '',
     sortBy: 'scoreDesc', // scoreDesc, scoreAsc, name
@@ -138,13 +138,12 @@ Page({
 
   // 点击录入按钮
   onTapInput() {
-    if (this.data.isAdmin) {
-      // 管理员可以录入任意用户
-      this.setData({ showInputModal: true, inputGameName: '' });
-    } else {
-      // 普通用户只能录入自己
-      this.inputSelf();
+    // 只检测当前用户是否已录入过，不管是不是管理员
+    if (this.data.currentUser && this.data.currentUser.gameName) {
+      wx.showToast({ title: '您已经录入过啦～', icon: 'none' });
+      return;
     }
+    this.inputSelf();
   },
 
   // 普通用户录入自己
@@ -300,6 +299,53 @@ Page({
   onSortChange(e) {
     this.setData({ sortBy: e.detail.value });
     this.loadFlowers();
+  },
+
+  // 切换培育状态（培育中/取消培育）
+  async onToggleGrowing(e) {
+    const flower = e.currentTarget.dataset.flower;
+    
+    if (this.data.isAdmin) {
+      // 管理员：需要选择了用户才能操作
+      if (!this.data.selectedUserId) {
+        wx.showToast({ title: '请先选择游戏昵称', icon: 'none' });
+        return;
+      }
+    } else {
+      // 普通用户：需要先录入
+      if (!this.data.currentUser || !this.data.currentUser.gameName) {
+        wx.showToast({ title: '请先录入您的信息', icon: 'none' });
+        return;
+      }
+    }
+    
+    const action = flower.isGrowing ? 'unmarkGrowing' : 'markGrowing';
+    const message = flower.isGrowing ? '取消培育中...' : '记录培育中...';
+    
+    wx.showLoading({ title: message });
+    try {
+      const { result } = await wx.cloud.callFunction({
+        name: 'gardenUnion',
+        data: {
+          action: action,
+          flowerId: flower._id,
+          selectedUserId: this.data.selectedUserId // 管理员选择的用户ID
+        }
+      });
+      
+      if (result.success) {
+        const toastMsg = flower.isGrowing ? '已取消培育！' : '记录培育成功！';
+        wx.showToast({ title: toastMsg, icon: 'success' });
+        this.loadFlowers(); // 刷新列表
+      } else {
+        wx.showToast({ title: result.message || '操作失败', icon: 'none' });
+      }
+    } catch (err) {
+      console.error('操作失败:', err);
+      wx.showToast({ title: '操作失败，请重试', icon: 'none' });
+    } finally {
+      wx.hideLoading();
+    }
   },
 
   // 切换拥有状态（拥有/取消拥有）

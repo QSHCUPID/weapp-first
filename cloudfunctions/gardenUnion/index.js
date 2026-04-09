@@ -41,6 +41,10 @@ exports.main = async (event, context) => {
         return await markOwned(OPENID, event.flowerId, event.selectedUserId, isAdmin)
       case 'unmarkOwned':
         return await unmarkOwned(OPENID, event.flowerId, event.selectedUserId, isAdmin)
+      case 'markGrowing':
+        return await markGrowing(OPENID, event.flowerId, event.selectedUserId, isAdmin)
+      case 'unmarkGrowing':
+        return await unmarkGrowing(OPENID, event.flowerId, event.selectedUserId, isAdmin)
       case 'addFlower':
         return await addFlower(OPENID, event.flower)
       case 'getTempUrl':
@@ -226,27 +230,34 @@ async function getFlowers(openid, params, isAdmin) {
     }
   }
   
-  // 获取目标用户的拥有记录
+  // 获取目标用户的拥有记录和培育记录
   const { data: targetOwnerships } = targetUserId 
     ? await db.collection(COLLECTIONS.OWNERSHIPS)
         .where({ userId: targetUserId })
         .get()
     : { data: [] }
-  const targetOwnedFlowerIds = new Set(targetOwnerships.map(o => o.flowerId))
+  
+  const targetOwnedFlowerIds = new Set(
+    targetOwnerships.filter(o => o.status === 'owned').map(o => o.flowerId)
+  )
+  const targetGrowingFlowerIds = new Set(
+    targetOwnerships.filter(o => o.status === 'growing').map(o => o.flowerId)
+  )
   
   // 获取所有花朵的拥有记录
   const { data: allOwnerships } = await db.collection(COLLECTIONS.OWNERSHIPS).get()
   
   // 处理花朵数据
   let resultFlowers = flowers.map(flower => {
-    // 获取这个花朵的所有拥有者
-    const flowerOwnerships = allOwnerships.filter(o => o.flowerId === flower._id)
+    // 获取这个花朵的所有拥有者（只统计 owned 状态）
+    const flowerOwnerships = allOwnerships.filter(o => o.flowerId === flower._id && o.status === 'owned')
     const ownerIds = new Set(flowerOwnerships.map(o => o.userId))
     const owners = Array.from(ownerIds).map(id => userMap[id]).filter(Boolean)
     
     return {
       ...flower,
       isOwned: targetOwnedFlowerIds.has(flower._id),
+      isGrowing: targetGrowingFlowerIds.has(flower._id),
       ownerCount: owners.length,
       owners: owners
     }
@@ -255,11 +266,10 @@ async function getFlowers(openid, params, isAdmin) {
   // 视图过滤
   if (viewFilter === 'owned') {
     resultFlowers = resultFlowers.filter(f => f.isOwned)
+  } else if (viewFilter === 'growing') {
+    resultFlowers = resultFlowers.filter(f => f.isGrowing)
   } else if (viewFilter === 'notOwned') {
-    resultFlowers = resultFlowers.filter(f => !f.isOwned)
-  } else if (viewFilter === 'toGrow') {
-    // 待培育：可以根据需要自定义逻辑，这里暂时和未拥有一样
-    resultFlowers = resultFlowers.filter(f => !f.isOwned)
+    resultFlowers = resultFlowers.filter(f => !f.isOwned && !f.isGrowing)
   }
   
   // 排序
@@ -296,13 +306,24 @@ async function markOwned(openid, flowerId, selectedUserId, isAdmin) {
     targetUserId = users[0]._id
   }
   
-  // 检查是否已经拥有
-  const { data: existing } = await db.collection(COLLECTIONS.OWNERSHIPS)
-    .where({ userId: targetUserId, flowerId })
+  // 先检查是否已经拥有
+  const { data: existingOwned } = await db.collection(COLLECTIONS.OWNERSHIPS)
+    .where({ userId: targetUserId, flowerId, status: 'owned' })
     .get()
   
-  if (existing.length > 0) {
+  if (existingOwned.length > 0) {
     return { success: false, message: '已经拥有这个花朵啦' }
+  }
+  
+  // 先删除培育状态（互斥）
+  const { data: existingGrowing } = await db.collection(COLLECTIONS.OWNERSHIPS)
+    .where({ userId: targetUserId, flowerId, status: 'growing' })
+    .get()
+  
+  if (existingGrowing.length > 0) {
+    await db.collection(COLLECTIONS.OWNERSHIPS)
+      .doc(existingGrowing[0]._id)
+      .remove()
   }
   
   // 添加拥有记录
@@ -312,6 +333,7 @@ async function markOwned(openid, flowerId, selectedUserId, isAdmin) {
       openid: isAdmin ? '' : openid, // 管理员操作时不记录 openid
       userId: targetUserId,
       flowerId,
+      status: 'owned',
       createdAt: now
     }
   })
@@ -343,11 +365,106 @@ async function unmarkOwned(openid, flowerId, selectedUserId, isAdmin) {
   
   // 删除拥有记录
   const { data: ownerships } = await db.collection(COLLECTIONS.OWNERSHIPS)
-    .where({ userId: targetUserId, flowerId })
+    .where({ userId: targetUserId, flowerId, status: 'owned' })
     .get()
   
   if (ownerships.length === 0) {
     return { success: false, message: '未找到拥有记录' }
+  }
+  
+  await db.collection(COLLECTIONS.OWNERSHIPS)
+    .doc(ownerships[0]._id)
+    .remove()
+  
+  return { success: true }
+}
+
+// 标记培育中
+async function markGrowing(openid, flowerId, selectedUserId, isAdmin) {
+  if (!flowerId) {
+    return { success: false, message: '花朵ID不能为空' }
+  }
+  
+  let targetUserId = null
+  if (isAdmin && selectedUserId) {
+    // 管理员操作指定用户
+    targetUserId = selectedUserId
+  } else {
+    // 获取当前用户信息
+    const { data: users } = await db.collection(COLLECTIONS.USERS)
+      .where({ openid })
+      .get()
+    
+    if (users.length === 0 || !users[0].gameName) {
+      return { success: false, message: '请先录入您的信息' }
+    }
+    targetUserId = users[0]._id
+  }
+  
+  // 先检查是否已经培育中
+  const { data: existingGrowing } = await db.collection(COLLECTIONS.OWNERSHIPS)
+    .where({ userId: targetUserId, flowerId, status: 'growing' })
+    .get()
+  
+  if (existingGrowing.length > 0) {
+    return { success: false, message: '已经在培育中啦' }
+  }
+  
+  // 先删除拥有状态（互斥）
+  const { data: existingOwned } = await db.collection(COLLECTIONS.OWNERSHIPS)
+    .where({ userId: targetUserId, flowerId, status: 'owned' })
+    .get()
+  
+  if (existingOwned.length > 0) {
+    await db.collection(COLLECTIONS.OWNERSHIPS)
+      .doc(existingOwned[0]._id)
+      .remove()
+  }
+  
+  // 添加培育记录
+  const now = new Date()
+  await db.collection(COLLECTIONS.OWNERSHIPS).add({
+    data: {
+      openid: isAdmin ? '' : openid, // 管理员操作时不记录 openid
+      userId: targetUserId,
+      flowerId,
+      status: 'growing',
+      createdAt: now
+    }
+  })
+  
+  return { success: true }
+}
+
+// 取消培育中
+async function unmarkGrowing(openid, flowerId, selectedUserId, isAdmin) {
+  if (!flowerId) {
+    return { success: false, message: '花朵ID不能为空' }
+  }
+  
+  let targetUserId = null
+  if (isAdmin && selectedUserId) {
+    // 管理员操作指定用户
+    targetUserId = selectedUserId
+  } else {
+    // 获取当前用户信息
+    const { data: users } = await db.collection(COLLECTIONS.USERS)
+      .where({ openid })
+      .get()
+    
+    if (users.length === 0 || !users[0].gameName) {
+      return { success: false, message: '请先录入您的信息' }
+    }
+    targetUserId = users[0]._id
+  }
+  
+  // 删除培育记录
+  const { data: ownerships } = await db.collection(COLLECTIONS.OWNERSHIPS)
+    .where({ userId: targetUserId, flowerId, status: 'growing' })
+    .get()
+  
+  if (ownerships.length === 0) {
+    return { success: false, message: '未找到培育记录' }
   }
   
   await db.collection(COLLECTIONS.OWNERSHIPS)

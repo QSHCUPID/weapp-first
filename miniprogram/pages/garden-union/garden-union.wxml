@@ -33,8 +33,8 @@
   <view class="filter-row">
     <view class="filter-item">
       <text class="filter-label">视图：</text>
-      <picker mode="selector" range="{{['全部', '已拥有', '未拥有', '待培育']}}" bindchange="onViewFilterChange">
-        <view class="picker">{{['全部', '已拥有', '未拥有', '待培育'][viewFilter === 'all' ? 0 : viewFilter === 'owned' ? 1 : viewFilter === 'notOwned' ? 2 : 3]}}</view>
+      <picker mode="selector" range="{{['全部', '已拥有', '培育中', '未拥有']}}" bindchange="onViewFilterChange">
+        <view class="picker">{{['全部', '已拥有', '培育中', '未拥有'][viewFilter === 'all' ? 0 : viewFilter === 'owned' ? 1 : viewFilter === 'growing' ? 2 : 3]}}</view>
       </picker>
     </view>
     
@@ -80,13 +80,22 @@
       </view>
     </view>
     
-    <button 
-      class="mark-btn {{item.isOwned ? 'owned' : ''}}" 
-      data-flower="{{item}}" 
-      bindtap="onToggleOwned"
-    >
-      {{item.isOwned ? '✔' : '拥有'}}
-    </button>
+    <view class="flower-actions">
+      <button 
+        class="action-btn grow-btn {{item.isGrowing ? 'active' : ''}}" 
+        data-flower="{{item}}" 
+        bindtap="onToggleGrowing"
+      >
+        🌱
+      </button>
+      <button 
+        class="action-btn owned-btn {{item.isOwned ? 'active' : ''}}" 
+        data-flower="{{item}}" 
+        bindtap="onToggleOwned"
+      >
+        ✔
+      </button>
+    </view>
   </view>
   
   <view class="empty-tip" wx:if="{{flowers.length === 0}}">
