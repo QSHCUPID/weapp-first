@@ -4,8 +4,12 @@
   
   <view class="header-right">
     <button class="input-btn" bindtap="onTapInput">录入</button>
-    <view class="user-info">
-      <text class="user-game-name">{{userGameName || '未录入'}}</text>
+    <view 
+      class="user-info {{isAdmin ? 'clickable' : ''}}" 
+      bindtap="onTapUserGameName"
+    >
+      <text class="user-game-name">{{isAdmin ? selectedGameName : (userGameName || '未录入')}}</text>
+      <text wx:if="{{isAdmin}}" class="select-arrow">▼</text>
     </view>
   </view>
 </view>
@@ -79,7 +83,7 @@
     <button 
       class="mark-btn {{item.isOwned ? 'owned' : ''}}" 
       data-flower="{{item}}" 
-      bindtap="onMarkOwned"
+      bindtap="onToggleOwned"
     >
       {{item.isOwned ? '✔' : '拥有'}}
     </button>
@@ -95,6 +99,30 @@
   <view class="add-btn">
     <text class="add-icon">+</text>
     <text class="add-text">录入花朵</text>
+  </view>
+</view>
+
+<!-- 用户选择器弹窗（管理员用） -->
+<view class="modal" wx:if="{{showUserPicker}}">
+  <view class="modal-content user-picker-modal">
+    <view class="modal-title">选择游戏昵称</view>
+    
+    <scroll-view class="user-list" scroll-y>
+      <view 
+        class="user-item {{selectedUserId === user._id ? 'selected' : ''}}" 
+        wx:for="{{allUsers}}" 
+        wx:key="_id"
+        data-user="{{user}}"
+        bindtap="onSelectUser"
+      >
+        <text class="user-item-name">{{user.gameName}}</text>
+        <text wx:if="{{selectedUserId === user._id}}" class="user-item-check">✔</text>
+      </view>
+    </scroll-view>
+    
+    <view class="modal-buttons">
+      <button class="modal-btn cancel" bindtap="e => setData({showUserPicker: false})">关闭</button>
+    </view>
   </view>
 </view>
 

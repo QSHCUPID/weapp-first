@@ -7,6 +7,13 @@ Page({
     isAdmin: false,
     userGameName: '',
     
+    // 管理员选择的游戏昵称
+    selectedUserId: null,
+    selectedGameName: '',
+    
+    // 所有游戏昵称列表（管理员用）
+    allUsers: [],
+    
     // 搜索和过滤
     searchKeyword: '',
     viewFilter: 'all', // all, owned, notOwned, toGrow
@@ -20,6 +27,7 @@ Page({
     // 弹窗控制
     showInputModal: false, // 录入用户弹窗
     showAddFlowerModal: false, // 添加花朵弹窗
+    showUserPicker: false, // 用户选择器弹窗
     inputGameName: '',
     
     // 新花朵表单
@@ -41,7 +49,7 @@ Page({
   },
 
   onPullDownRefresh() {
-    this.loadFlowers();
+    this.loadAllData();
     wx.stopPullDownRefresh();
   },
 
@@ -54,6 +62,14 @@ Page({
     wx.cloud.init({
       env: wx.cloud.DYNAMIC_CURRENT_ENV
     });
+  },
+
+  // 加载所有数据
+  async loadAllData() {
+    if (this.data.isAdmin) {
+      await this.loadAllUsers();
+    }
+    await this.loadFlowers();
   },
 
   // 检查登录状态
@@ -70,11 +86,54 @@ Page({
           isAdmin: result.user.role === 'admin',
           userGameName: result.user.gameName || (result.user.role === 'admin' ? 'admin' : '')
         });
+        
+        // 如果是管理员，默认选择自己
+        if (result.user.role === 'admin') {
+          this.setData({
+            selectedUserId: result.user._id,
+            selectedGameName: result.user.gameName || 'admin'
+          });
+        }
       }
-      this.loadFlowers();
+      await this.loadAllData();
     } catch (err) {
       console.error('检查登录失败:', err);
     }
+  },
+
+  // 加载所有用户（管理员用）
+  async loadAllUsers() {
+    try {
+      const { result } = await wx.cloud.callFunction({
+        name: 'gardenUnion',
+        data: { action: 'getAllUsers' }
+      });
+      
+      if (result.success) {
+        this.setData({ allUsers: result.users || [] });
+      }
+    } catch (err) {
+      console.error('加载用户列表失败:', err);
+    }
+  },
+
+  // 点击游戏昵称区域（管理员可以选择）
+  onTapUserGameName() {
+    if (!this.data.isAdmin) {
+      return; // 普通用户不能选择
+    }
+    this.setData({ showUserPicker: true });
+  },
+
+  // 选择用户
+  onSelectUser(e) {
+    const user = e.currentTarget.dataset.user;
+    this.setData({
+      selectedUserId: user._id,
+      selectedGameName: user.gameName,
+      showUserPicker: false
+    });
+    this.loadFlowers(); // 刷新花朵列表
   },
 
   // 点击录入按钮
@@ -131,7 +190,7 @@ Page({
       
       if (result.success) {
         wx.showToast({ title: '录入成功！', icon: 'success' });
-        this.checkLogin(); // 刷新用户信息
+        await this.checkLogin(); // 刷新用户信息
       } else {
         wx.showToast({ title: result.message || '录入失败', icon: 'none' });
       }
@@ -155,7 +214,8 @@ Page({
           viewFilter: this.data.viewFilter,
           minScore: this.data.minScore ? parseInt(this.data.minScore) : null,
           maxScore: this.data.maxScore ? parseInt(this.data.maxScore) : null,
-          sortBy: this.data.sortBy
+          sortBy: this.data.sortBy,
+          selectedUserId: this.data.selectedUserId // 管理员选择的用户ID
         }
       });
       
@@ -205,33 +265,48 @@ Page({
     this.loadFlowers();
   },
 
-  // 标记拥有花朵
-  async onMarkOwned(e) {
+  // 切换拥有状态（拥有/取消拥有）
+  async onToggleOwned(e) {
     const flower = e.currentTarget.dataset.flower;
-    if (!this.data.currentUser || !this.data.currentUser.gameName) {
-      wx.showToast({ title: '请先录入您的信息', icon: 'none' });
-      return;
+    
+    if (this.data.isAdmin) {
+      // 管理员：需要选择了用户才能操作
+      if (!this.data.selectedUserId) {
+        wx.showToast({ title: '请先选择游戏昵称', icon: 'none' });
+        return;
+      }
+    } else {
+      // 普通用户：需要先录入
+      if (!this.data.currentUser || !this.data.currentUser.gameName) {
+        wx.showToast({ title: '请先录入您的信息', icon: 'none' });
+        return;
+      }
     }
     
-    wx.showLoading({ title: '记录中...' });
+    const action = flower.isOwned ? 'unmarkOwned' : 'markOwned';
+    const message = flower.isOwned ? '取消中...' : '记录中...';
+    
+    wx.showLoading({ title: message });
     try {
       const { result } = await wx.cloud.callFunction({
         name: 'gardenUnion',
         data: {
-          action: 'markOwned',
-          flowerId: flower._id
+          action: action,
+          flowerId: flower._id,
+          selectedUserId: this.data.selectedUserId // 管理员选择的用户ID
         }
       });
       
       if (result.success) {
-        wx.showToast({ title: '记录成功！', icon: 'success' });
+        const toastMsg = flower.isOwned ? '已取消拥有！' : '记录成功！';
+        wx.showToast({ title: toastMsg, icon: 'success' });
         this.loadFlowers(); // 刷新列表
       } else {
-        wx.showToast({ title: result.message || '记录失败', icon: 'none' });
+        wx.showToast({ title: result.message || '操作失败', icon: 'none' });
       }
     } catch (err) {
-      console.error('记录失败:', err);
-      wx.showToast({ title: '记录失败，请重试', icon: 'none' });
+      console.error('操作失败:', err);
+      wx.showToast({ title: '操作失败，请重试', icon: 'none' });
     } finally {
       wx.hideLoading();
     }

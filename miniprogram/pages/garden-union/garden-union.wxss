@@ -38,11 +38,25 @@ page {
   background-color: rgba(255,255,255,0.2);
   padding: 8px 12px;
   border-radius: 15px;
+  display: flex;
+  align-items: center;
+}
+
+.user-info.clickable {
+  background-color: rgba(255,255,255,0.3);
+  cursor: pointer;
 }
 
 .user-game-name {
   color: white;
   font-size: 14px;
+  margin-right: 4px;
+}
+
+.select-arrow {
+  color: white;
+  font-size: 10px;
+  opacity: 0.8;
 }
 
 /* 搜索区域 */
@@ -379,4 +393,41 @@ page {
 .modal-btn.confirm {
   background-color: #667eea;
   color: white;
+}
+
+/* 用户选择器弹窗 */
+.user-picker-modal {
+  max-height: 70vh;
+}
+
+.user-list {
+  max-height: 40vh;
+  margin-bottom: 16px;
+}
+
+.user-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.user-item:last-child {
+  border-bottom: none;
+}
+
+.user-item.selected {
+  background-color: #e8f5e9;
+}
+
+.user-item-name {
+  font-size: 15px;
+  color: #333;
+}
+
+.user-item-check {
+  color: #4caf50;
+  font-size: 18px;
+  font-weight: bold;
 }

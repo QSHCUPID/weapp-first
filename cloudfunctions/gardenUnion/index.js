@@ -37,12 +37,16 @@ exports.main = async (event, context) => {
     switch (action) {
       case 'getCurrentUser':
         return await getCurrentUser(OPENID, isAdmin)
+      case 'getAllUsers':
+        return await getAllUsers(isAdmin)
       case 'inputUser':
         return await inputUser(OPENID, event.gameName, isAdmin)
       case 'getFlowers':
-        return await getFlowers(OPENID, event)
+        return await getFlowers(OPENID, event, isAdmin)
       case 'markOwned':
-        return await markOwned(OPENID, event.flowerId)
+        return await markOwned(OPENID, event.flowerId, event.selectedUserId, isAdmin)
+      case 'unmarkOwned':
+        return await unmarkOwned(OPENID, event.flowerId, event.selectedUserId, isAdmin)
       case 'addFlower':
         return await addFlower(OPENID, event.flower)
       default:
@@ -107,6 +111,19 @@ async function getCurrentUser(openid, isAdmin) {
   return { success: true, user }
 }
 
+// 获取所有用户（管理员用）
+async function getAllUsers(isAdmin) {
+  if (!isAdmin) {
+    return { success: false, message: '无权限' }
+  }
+  
+  const { data } = await db.collection(COLLECTIONS.USERS)
+    .orderBy('createdAt', 'desc')
+    .get()
+  
+  return { success: true, users: data }
+}
+
 // 录入用户
 async function inputUser(openid, gameName, isAdmin) {
   if (!gameName || !gameName.trim()) {
@@ -146,6 +163,15 @@ async function inputUser(openid, gameName, isAdmin) {
       return { success: false, message: '您已经录入过啦' }
     }
     
+    // 检查游戏昵称是否已被使用
+    const { data: nameCheck } = await db.collection(COLLECTIONS.USERS)
+      .where({ gameName: gameName.trim() })
+      .get()
+    
+    if (nameCheck.length > 0) {
+      return { success: false, message: '该游戏昵称已被使用' }
+    }
+    
     if (existingUsers.length > 0) {
       // 更新已有用户
       await db.collection(COLLECTIONS.USERS)
@@ -174,8 +200,8 @@ async function inputUser(openid, gameName, isAdmin) {
 }
 
 // 获取花朵列表
-async function getFlowers(openid, params) {
-  const { searchKeyword, viewFilter, minScore, maxScore, sortBy } = params
+async function getFlowers(openid, params, isAdmin) {
+  const { searchKeyword, viewFilter, minScore, maxScore, sortBy, selectedUserId } = params
   
   // 构建查询条件
   let query = db.collection(COLLECTIONS.FLOWERS)
@@ -208,11 +234,27 @@ async function getFlowers(openid, params) {
     userMap[u._id] = u.gameName
   })
   
-  // 获取当前用户的拥有记录
-  const { data: myOwnerships } = await db.collection(COLLECTIONS.OWNERSHIPS)
-    .where({ openid })
-    .get()
-  const myOwnedFlowerIds = new Set(myOwnerships.map(o => o.flowerId))
+  // 确定要检查的用户ID
+  let targetUserId = null
+  if (isAdmin && selectedUserId) {
+    targetUserId = selectedUserId
+  } else {
+    // 获取当前用户的ID
+    const { data: currentUsers } = await db.collection(COLLECTIONS.USERS)
+      .where({ openid })
+      .get()
+    if (currentUsers.length > 0) {
+      targetUserId = currentUsers[0]._id
+    }
+  }
+  
+  // 获取目标用户的拥有记录
+  const { data: targetOwnerships } = targetUserId 
+    ? await db.collection(COLLECTIONS.OWNERSHIPS)
+        .where({ userId: targetUserId })
+        .get()
+    : { data: [] }
+  const targetOwnedFlowerIds = new Set(targetOwnerships.map(o => o.flowerId))
   
   // 获取所有花朵的拥有记录
   const { data: allOwnerships } = await db.collection(COLLECTIONS.OWNERSHIPS).get()
@@ -226,7 +268,7 @@ async function getFlowers(openid, params) {
     
     return {
       ...flower,
-      isOwned: myOwnedFlowerIds.has(flower._id),
+      isOwned: targetOwnedFlowerIds.has(flower._id),
       ownerCount: owners.length,
       owners: owners
     }
@@ -255,37 +297,42 @@ async function getFlowers(openid, params) {
 }
 
 // 标记拥有花朵
-async function markOwned(openid, flowerId) {
+async function markOwned(openid, flowerId, selectedUserId, isAdmin) {
   if (!flowerId) {
     return { success: false, message: '花朵ID不能为空' }
   }
   
-  // 获取当前用户信息
-  const { data: users } = await db.collection(COLLECTIONS.USERS)
-    .where({ openid })
-    .get()
-  
-  if (users.length === 0 || !users[0].gameName) {
-    return { success: false, message: '请先录入您的信息' }
+  let targetUserId = null
+  if (isAdmin && selectedUserId) {
+    // 管理员操作指定用户
+    targetUserId = selectedUserId
+  } else {
+    // 获取当前用户信息
+    const { data: users } = await db.collection(COLLECTIONS.USERS)
+      .where({ openid })
+      .get()
+    
+    if (users.length === 0 || !users[0].gameName) {
+      return { success: false, message: '请先录入您的信息' }
+    }
+    targetUserId = users[0]._id
   }
-  
-  const userId = users[0]._id
   
   // 检查是否已经拥有
   const { data: existing } = await db.collection(COLLECTIONS.OWNERSHIPS)
-    .where({ openid, flowerId })
+    .where({ userId: targetUserId, flowerId })
     .get()
   
   if (existing.length > 0) {
-    return { success: false, message: '您已经拥有这个花朵啦' }
+    return { success: false, message: '已经拥有这个花朵啦' }
   }
   
   // 添加拥有记录
   const now = new Date()
   await db.collection(COLLECTIONS.OWNERSHIPS).add({
     data: {
-      openid,
-      userId,
+      openid: isAdmin ? '' : openid, // 管理员操作时不记录 openid
+      userId: targetUserId,
       flowerId,
       createdAt: now
     }
@@ -294,10 +341,57 @@ async function markOwned(openid, flowerId) {
   return { success: true }
 }
 
+// 取消拥有花朵
+async function unmarkOwned(openid, flowerId, selectedUserId, isAdmin) {
+  if (!flowerId) {
+    return { success: false, message: '花朵ID不能为空' }
+  }
+  
+  let targetUserId = null
+  if (isAdmin && selectedUserId) {
+    // 管理员操作指定用户
+    targetUserId = selectedUserId
+  } else {
+    // 获取当前用户信息
+    const { data: users } = await db.collection(COLLECTIONS.USERS)
+      .where({ openid })
+      .get()
+    
+    if (users.length === 0 || !users[0].gameName) {
+      return { success: false, message: '请先录入您的信息' }
+    }
+    targetUserId = users[0]._id
+  }
+  
+  // 删除拥有记录
+  const { data: ownerships } = await db.collection(COLLECTIONS.OWNERSHIPS)
+    .where({ userId: targetUserId, flowerId })
+    .get()
+  
+  if (ownerships.length === 0) {
+    return { success: false, message: '未找到拥有记录' }
+  }
+  
+  await db.collection(COLLECTIONS.OWNERSHIPS)
+    .doc(ownerships[0]._id)
+    .remove()
+  
+  return { success: true }
+}
+
 // 添加花朵
 async function addFlower(openid, flower) {
   if (!flower || !flower.name || !flower.score || !flower.type || !flower.image) {
     return { success: false, message: '请填写完整的花朵信息' }
+  }
+  
+  // 检查花朵名称是否重复
+  const { data: existing } = await db.collection(COLLECTIONS.FLOWERS)
+    .where({ name: flower.name.trim() })
+    .get()
+  
+  if (existing.length > 0) {
+    return { success: false, message: '该花朵名称已存在，请使用其他名称' }
   }
   
   const now = new Date()
