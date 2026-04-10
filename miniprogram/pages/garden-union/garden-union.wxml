@@ -37,18 +37,18 @@
   <!-- 过滤模式切换（管理员选择admin时不显示个人拥有） -->
   <view class="filter-mode-row" wx:if="{{!isAdmin || selectedGameName !== 'admin'}}">
     <view 
-      class="filter-mode-btn {{filterMode === 'union' ? 'active' : ''}}" 
-      data-mode="union"
-      bindtap="onFilterModeChange"
-    >
-      工会拥有
-    </view>
-    <view 
       class="filter-mode-btn {{filterMode === 'personal' ? 'active' : ''}}" 
       data-mode="personal"
       bindtap="onFilterModeChange"
     >
       个人拥有
+    </view>
+    <view 
+      class="filter-mode-btn {{filterMode === 'union' ? 'active' : ''}}" 
+      data-mode="union"
+      bindtap="onFilterModeChange"
+    >
+      工会拥有
     </view>
   </view>
   
@@ -316,18 +316,18 @@
       <!-- 过滤模式切换（管理员选择admin时不显示个人拥有） -->
       <view class="filter-mode-row" wx:if="{{!isAdmin || selectedGameName !== 'admin'}}">
         <view 
-          class="filter-mode-btn {{filterMode === 'union' ? 'active' : ''}}" 
-          data-mode="union"
-          bindtap="onFilterModeChange"
-        >
-          工会拥有
-        </view>
-        <view 
           class="filter-mode-btn {{filterMode === 'personal' ? 'active' : ''}}" 
           data-mode="personal"
           bindtap="onFilterModeChange"
         >
           个人拥有
+        </view>
+        <view 
+          class="filter-mode-btn {{filterMode === 'union' ? 'active' : ''}}" 
+          data-mode="union"
+          bindtap="onFilterModeChange"
+        >
+          工会拥有
         </view>
       </view>
       

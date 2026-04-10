@@ -19,7 +19,7 @@ Page({
     allUsers: [],
     
     // 过滤模式：union（工会）或 personal（个人）
-    filterMode: 'union',
+    filterMode: 'personal',
     
     // 搜索和过滤
     searchKeyword: '',

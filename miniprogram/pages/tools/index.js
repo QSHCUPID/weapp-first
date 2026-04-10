@@ -20,7 +20,7 @@ const config = {
     },
     // 计算器
     calculator: {
-      enabled: true,
+      enabled: false,
       name: '计算器',
       icon: '🧮',
       description: '简单好用的计算器',
@@ -29,7 +29,7 @@ const config = {
     },
     // 待办清单
     todo: {
-      enabled: true,
+      enabled: false,
       name: '待办清单',
       icon: '📝',
       description: '管理你的待办事项',
@@ -38,7 +38,7 @@ const config = {
     },
     // 天气预报
     weather: {
-      enabled: true,
+      enabled: false,
       name: '天气预报',
       icon: '🌤️',
       description: '实时天气查询',
