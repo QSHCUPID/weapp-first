@@ -108,7 +108,7 @@ async function getAllUsers(isAdmin) {
   return { success: true, users: data }
 }
 
-// 录入用户
+// 录入或更新用户
 async function inputUser(openid, gameName, isAdmin) {
   if (!gameName || !gameName.trim()) {
     return { success: false, message: '游戏昵称不能为空' }
@@ -138,22 +138,22 @@ async function inputUser(openid, gameName, isAdmin) {
       }
     })
   } else {
-    // 普通用户只能录入自己
+    // 普通用户录入或更新自己
     const { data: existingUsers } = await db.collection(COLLECTIONS.USERS)
       .where({ openid })
       .get()
     
-    if (existingUsers.length > 0 && existingUsers[0].gameName) {
-      return { success: false, message: '您已经录入过啦' }
-    }
-    
-    // 检查游戏昵称是否已被使用
+    // 检查游戏昵称是否已被其他用户使用
     const { data: nameCheck } = await db.collection(COLLECTIONS.USERS)
       .where({ gameName: gameName.trim() })
       .get()
     
+    // 如果昵称已被使用，且不是当前用户自己，则报错
     if (nameCheck.length > 0) {
-      return { success: false, message: '该游戏昵称已被使用' }
+      const isSelf = existingUsers.length > 0 && nameCheck[0]._id === existingUsers[0]._id
+      if (!isSelf) {
+        return { success: false, message: '该游戏昵称已被使用' }
+      }
     }
     
     if (existingUsers.length > 0) {

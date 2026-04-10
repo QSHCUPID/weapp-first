@@ -141,25 +141,19 @@ Page({
 
   // 点击录入按钮
   onTapInput() {
-    // 只检测当前用户是否已录入过，不管是不是管理员
-    if (this.data.currentUser && this.data.currentUser.gameName) {
-      wx.showToast({ title: '您已经录入过啦～', icon: 'none' });
-      return;
-    }
+    // 不管是否已录入过，都可以点击录入来更新
     this.inputSelf();
   },
 
-  // 普通用户录入自己
+  // 录入或更新自己的游戏昵称
   async inputSelf() {
-    if (this.data.currentUser && this.data.currentUser.gameName) {
-      wx.showToast({ title: '您已经录入过啦～', icon: 'none' });
-      return;
-    }
+    const currentGameName = this.data.currentUser?.gameName || '';
     
     wx.showModal({
-      title: '录入信息',
+      title: currentGameName ? '更新游戏昵称' : '录入信息',
       editable: true,
       placeholderText: '请输入您的游戏昵称',
+      content: currentGameName, // 已录入的话，显示当前昵称
       success: async (res) => {
         if (res.confirm && res.content) {
           await this.doInputUser(res.content);
