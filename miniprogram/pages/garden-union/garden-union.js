@@ -286,7 +286,20 @@ Page({
 
   // 视图过滤
   onViewFilterChange(e) {
-    this.setData({ viewFilter: e.detail.value });
+    const index = parseInt(e.detail.value);
+    let viewFilter = 'all';
+    
+    if (this.data.filterMode === 'union') {
+      // 工会模式：0=全部, 1=已拥有, 2=未拥有
+      const options = ['all', 'owned', 'notOwned'];
+      viewFilter = options[index] || 'all';
+    } else {
+      // 个人模式：0=全部, 1=已拥有, 2=培育中, 3=未拥有
+      const options = ['all', 'owned', 'growing', 'notOwned'];
+      viewFilter = options[index] || 'all';
+    }
+    
+    this.setData({ viewFilter: viewFilter });
     this.loadFlowers();
   },
 
