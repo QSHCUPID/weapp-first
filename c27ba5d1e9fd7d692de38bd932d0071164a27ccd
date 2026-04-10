@@ -1,0 +1,23 @@
+cloudfunctions/gardenUnion/index.js
+  618fd96b124a5a5d 316-324,326
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.0.39",
+  "base_commit_sha": "c27ba5d1e9fd7d692de38bd932d0071164a27ccd",
+  "prompts": {
+    "618fd96b124a5a5d": {
+      "agent_id": {
+        "tool": "turing-coder",
+        "id": "IzGup5X3OdRo",
+        "model": "gpt-5"
+      },
+      "human_author": "qiush <qiush@asiainfo.com>",
+      "messages": [],
+      "total_additions": 10,
+      "total_deletions": 0,
+      "accepted_lines": 10,
+      "overriden_lines": 0
+    }
+  }
+}
