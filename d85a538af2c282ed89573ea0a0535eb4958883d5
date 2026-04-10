@@ -1,0 +1,44 @@
+miniprogram/config.js
+  b441b53820576fb9 25,34,43
+miniprogram/pages/garden-union/garden-union.wxml
+  21e0de89e3499d8e 40-41,44,47-48,51,319-320,323,326-327,330
+miniprogram/pages/tools/index.js
+  b441b53820576fb9 23,32,41
+miniprogram/pages/garden-union/garden-union.wxss
+  21e0de89e3499d8e 449-450,452-454,457-471,477-478,482,484-485,489-494
+miniprogram/pages/garden-union/garden-union.js
+  21e0de89e3499d8e 22
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.0.39",
+  "base_commit_sha": "d85a538af2c282ed89573ea0a0535eb4958883d5",
+  "prompts": {
+    "21e0de89e3499d8e": {
+      "agent_id": {
+        "tool": "turing-coder",
+        "id": "Qf4lzsyz3WQB",
+        "model": "claude-4.5"
+      },
+      "human_author": "qiush <qiush@asiainfo.com>",
+      "messages": [],
+      "total_additions": 49,
+      "total_deletions": 22,
+      "accepted_lines": 46,
+      "overriden_lines": 0
+    },
+    "b441b53820576fb9": {
+      "agent_id": {
+        "tool": "turing-coder",
+        "id": "WIkKg0kjT0jb",
+        "model": "claude-4.5"
+      },
+      "human_author": "qiush <qiush@asiainfo.com>",
+      "messages": [],
+      "total_additions": 6,
+      "total_deletions": 6,
+      "accepted_lines": 6,
+      "overriden_lines": 0
+    }
+  }
+}
