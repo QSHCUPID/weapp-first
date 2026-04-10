@@ -1,21 +1,25 @@
-<!-- 顶部区域 -->
-<view class="header">
-  <view class="union-name">🌸 蕊香阁</view>
-  
-  <view class="header-right">
-    <button class="input-btn" bindtap="onTapInput">录入</button>
-    <view 
-      class="user-info {{isAdmin ? 'clickable' : ''}}" 
-      bindtap="onTapUserGameName"
-    >
-      <text class="user-game-name">{{isAdmin ? selectedGameName : (userGameName || '未录入')}}</text>
-      <text wx:if="{{isAdmin}}" class="select-arrow">▼</text>
+<!-- 页面容器 -->
+<view class="page-container">
+  <!-- 可滚动的内容区域 -->
+  <scroll-view class="scrollable-content" scroll-y="{{true}}" bindscroll="onPageScroll" bindscrolltolower="onReachBottom">
+    <!-- 顶部区域 -->
+    <view class="header">
+      <view class="union-name">蕊香阁</view>
+      
+      <view class="header-right">
+        <button class="input-btn {{needsInput ? 'highlight' : ''}}" bindtap="onTapInput">录入</button>
+        <view 
+          class="user-info {{isAdmin ? 'clickable' : ''}}" 
+          bindtap="onTapUserGameName"
+        >
+          <text class="user-game-name">{{isAdmin ? selectedGameName : (userGameName || '未录入')}}</text>
+          <text wx:if="{{isAdmin}}" class="select-arrow">▼</text>
+        </view>
+      </view>
     </view>
-  </view>
-</view>
 
-<!-- 搜索区域 -->
-<view class="search-section">
+    <!-- 搜索区域 -->
+    <view class="search-section">
   <view class="search-box">
     <input 
       class="search-input" 
@@ -48,34 +52,81 @@
     </view>
   </view>
   
-  <view class="filter-row">
-    <view class="filter-item">
-      <text class="filter-label">视图：</text>
-      <!-- 工会拥有：只有全部、已拥有、未拥有 -->
-      <picker 
-        wx:if="{{filterMode === 'union'}}"
-        mode="selector" 
-        range="{{['全部', '已拥有', '未拥有']}}" 
-        bindchange="onViewFilterChange"
+  <view class="filter-row view-tags-row">
+    <!-- 工会拥有：只有全部、已拥有、未拥有 -->
+    <view wx:if="{{filterMode === 'union'}}" class="tag-group">
+      <view 
+        class="filter-tag {{viewFilter === 'all' ? 'active' : ''}}" 
+        data-filter="all"
+        bindtap="onViewTagTap"
       >
-        <view class="picker">{{['全部', '已拥有', '未拥有'][viewFilter === 'all' ? 0 : viewFilter === 'owned' ? 1 : 2]}}</view>
-      </picker>
-      <!-- 个人拥有：全部、已拥有、培育中、未拥有 -->
-      <picker 
-        wx:if="{{filterMode === 'personal'}}"
-        mode="selector" 
-        range="{{['全部', '已拥有', '培育中', '未拥有']}}" 
-        bindchange="onViewFilterChange"
+        全部
+      </view>
+      <view 
+        class="filter-tag {{viewFilter === 'owned' ? 'active' : ''}}" 
+        data-filter="owned"
+        bindtap="onViewTagTap"
       >
-        <view class="picker">{{['全部', '已拥有', '培育中', '未拥有'][viewFilter === 'all' ? 0 : viewFilter === 'owned' ? 1 : viewFilter === 'growing' ? 2 : 3]}}</view>
-      </picker>
+        已拥有
+      </view>
+      <view 
+        class="filter-tag {{viewFilter === 'notOwned' ? 'active' : ''}}" 
+        data-filter="notOwned"
+        bindtap="onViewTagTap"
+      >
+        未拥有
+      </view>
+      
+      <!-- 排序控件 -->
+      <view class="sort-control-wrapper">
+        <view class="sort-icon-btn" bindtap="onToggleSort">
+          <text class="sort-icon">{{sortBy === 'scoreDesc' || sortBy === 'ownerCount' || sortBy === 'nameDesc' ? '↓' : sortBy === 'scoreAsc' || sortBy === 'ownerCountAsc' || sortBy === 'name' ? '↑' : '⇅'}}</text>
+        </view>
+        <view class="sort-text-btn" bindtap="onToggleSortMode">
+          <text class="sort-text">{{sortBy === 'scoreDesc' || sortBy === 'scoreAsc' ? '按分数' : sortBy === 'ownerCount' || sortBy === 'ownerCountAsc' ? '按人数' : '按名称'}}</text>
+        </view>
+      </view>
     </view>
-    
-    <view class="filter-item">
-      <text class="filter-label">排序：</text>
-      <picker mode="selector" range="{{['分数降序', '分数升序', '名称']}}" bindchange="onSortChange">
-        <view class="picker">{{['分数降序', '分数升序', '名称'][sortBy === 'scoreDesc' ? 0 : sortBy === 'scoreAsc' ? 1 : 2]}}</view>
-      </picker>
+    <!-- 个人拥有：全部、已拥有、培育中、未拥有 -->
+    <view wx:if="{{filterMode === 'personal'}}" class="tag-group">
+      <view 
+        class="filter-tag {{viewFilter === 'all' ? 'active' : ''}}" 
+        data-filter="all"
+        bindtap="onViewTagTap"
+      >
+        全部
+      </view>
+      <view 
+        class="filter-tag {{viewFilter === 'owned' ? 'active' : ''}}" 
+        data-filter="owned"
+        bindtap="onViewTagTap"
+      >
+        已拥有
+      </view>
+      <view 
+        class="filter-tag {{viewFilter === 'growing' ? 'active' : ''}}" 
+        data-filter="growing"
+        bindtap="onViewTagTap"
+      >
+        培育中
+      </view>
+      <view 
+        class="filter-tag {{viewFilter === 'notOwned' ? 'active' : ''}}" 
+        data-filter="notOwned"
+        bindtap="onViewTagTap"
+      >
+        未拥有
+      </view>
+      
+      <!-- 排序控件 -->
+      <view class="sort-control-wrapper">
+        <view class="sort-icon-btn" bindtap="onToggleSort">
+          <text class="sort-icon">{{sortBy === 'scoreDesc' || sortBy === 'ownerCount' || sortBy === 'nameDesc' ? '↓' : sortBy === 'scoreAsc' || sortBy === 'ownerCountAsc' || sortBy === 'name' ? '↑' : '⇅'}}</text>
+        </view>
+        <view class="sort-text-btn" bindtap="onToggleSortMode">
+          <text class="sort-text">{{sortBy === 'scoreDesc' || sortBy === 'scoreAsc' ? '按分数' : sortBy === 'ownerCount' || sortBy === 'ownerCountAsc' ? '按人数' : '按名称'}}</text>
+        </view>
+      </view>
     </view>
   </view>
   
@@ -85,15 +136,86 @@
       <input class="score-input" type="number" placeholder="最低" value="{{minScore}}" bindinput="onMinScoreInput" />
       <text class="score-separator">-</text>
       <input class="score-input" type="number" placeholder="最高" value="{{maxScore}}" bindinput="onMaxScoreInput" />
-      <button class="apply-btn" size="mini" bindtap="onApplyScoreFilter">应用</button>
+      <button class="apply-btn" size="mini" bindtap="onApplyScoreFilter">刷新</button>
     </view>
   </view>
-</view>
+  
+  <!-- 快速过滤标签 -->
+  <view class="filter-row quick-score-tags">
+    <view 
+      class="score-tag {{minScore == 9 && maxScore == 9 ? 'active' : ''}}"
+      data-score="9"
+      bindtap="onQuickScoreFilter"
+    >
+      9
+    </view>
+    <view 
+      class="score-tag {{minScore == 14 && maxScore == 14 ? 'active' : ''}}"
+      data-score="14"
+      bindtap="onQuickScoreFilter"
+    >
+      14
+    </view>
+    <view 
+      class="score-tag {{minScore == 21 && maxScore == 21 ? 'active' : ''}}"
+      data-score="21"
+      bindtap="onQuickScoreFilter"
+    >
+      21
+    </view>
+    <view 
+      class="score-tag {{minScore == 23 && maxScore == 23 ? 'active' : ''}}"
+      data-score="23"
+      bindtap="onQuickScoreFilter"
+    >
+      23
+    </view>
+    <view 
+      class="score-tag {{minScore == 25 && maxScore == 25 ? 'active' : ''}}"
+      data-score="25"
+      bindtap="onQuickScoreFilter"
+    >
+      25
+    </view>
+    <view 
+      class="score-tag {{minScore == 28 && maxScore == 28 ? 'active' : ''}}"
+      data-score="28"
+      bindtap="onQuickScoreFilter"
+    >
+      28
+    </view>
+    <view 
+      class="score-tag {{minScore == 30 && maxScore == 30 ? 'active' : ''}}"
+      data-score="30"
+      bindtap="onQuickScoreFilter"
+    >
+      30
+    </view>
+  </view>
+    </view>
 
-<!-- 花朵列表 -->
-<view class="flower-list">
-  <view class="flower-item" wx:for="{{flowers}}" wx:key="_id">
-    <image class="flower-image" src="{{item.displayImage}}" mode="aspectFill" />
+    <!-- 统计信息 -->
+    <view class="stats-section">
+      <text class="stats-text">共 {{totalFlowerCount}} 朵</text>
+      <text class="stats-separator">|</text>
+      <text class="stats-text">已查询 {{filteredFlowerCount}} 朵</text>
+    </view>
+
+    <view class="flower-list">
+  <view 
+    class="flower-item" 
+    wx:for="{{flowers}}" 
+    wx:key="_id"
+    data-flower="{{item}}"
+    bindtap="onFlowerItemTap"
+  >
+    <image 
+      class="flower-image" 
+      src="{{item.displayImage}}" 
+      mode="aspectFit"
+      data-url="{{item.displayImage}}"
+      catchtap="onFlowerImageClick"
+    />
     
     <view class="flower-info">
       <view class="flower-name-row">
@@ -106,11 +228,19 @@
         <text class="flower-owner-count">👥 {{item.ownerCount}}人拥有</text>
       </view>
       
-      <view class="flower-owners" wx:if="{{item.owners && item.owners.length > 0}}">
-        <view class="owner-tag" wx:for="{{item.owners}}" wx:for-item="owner" wx:key="*this">
-          {{owner}}
+      <scroll-view 
+        class="flower-owners" 
+        wx:if="{{item.owners && item.owners.length > 0}}"
+        scroll-x="{{true}}"
+        scroll-with-animation="{{false}}"
+        show-scrollbar="{{false}}"
+      >
+        <view class="owner-tags-container">
+          <view class="owner-tag" wx:for="{{item.owners}}" wx:for-item="owner" wx:key="*this">
+            {{owner}}
+          </view>
         </view>
-      </view>
+      </scroll-view>
     </view>
     
     <!-- 只有个人模式下才显示操作按钮 -->
@@ -118,32 +248,230 @@
       <button 
         class="action-btn grow-btn {{item.isGrowing ? 'active' : ''}}" 
         data-flower="{{item}}" 
-        bindtap="onToggleGrowing"
+        catchtap="onToggleGrowing"
       >
         🌱
       </button>
       <button 
         class="action-btn owned-btn {{item.isOwned ? 'active' : ''}}" 
         data-flower="{{item}}" 
-        bindtap="onToggleOwned"
+        catchtap="onToggleOwned"
       >
         ✔
       </button>
+      <!-- 管理员在个人模式下，显示编辑和删除按钮 -->
+      <button 
+        class="action-btn edit-btn" 
+        wx:if="{{isAdmin}}"
+        data-flower="{{item}}" 
+        catchtap="onEditFlower"
+      >
+        ✏️
+      </button>
+      <button 
+        class="action-btn delete-btn" 
+        wx:if="{{isAdmin}}"
+        data-flower="{{item}}" 
+        catchtap="onDeleteFlower"
+      >
+        🗑️
+      </button>
     </view>
-    
-    <!-- 只有超级管理员才显示删除按钮 -->
-    <button 
-      class="delete-btn" 
-      wx:if="{{isAdmin}}"
-      data-flower="{{item}}" 
-      bindtap="onDeleteFlower"
-    >
-      🗑️
-    </button>
   </view>
   
-  <view class="empty-tip" wx:if="{{flowers.length === 0}}">
+  <view class="empty-tip" wx:if="{{flowers.length === 0 && !isLoading}}">
     暂无花朵数据～
+  </view>
+  
+  <!-- 加载状态提示 -->
+  <view class="loading-tip" wx:if="{{isLoading}}">
+    <text>加载中...</text>
+  </view>
+  
+      <!-- 没有更多数据提示 -->
+      <view class="no-more-tip" wx:if="{{flowers.length > 0 && !hasMore && !isLoading}}">
+        <text>没有更多数据了～</text>
+      </view>
+    </view>
+  </scroll-view>
+
+  <!-- 固定头部区域（滚动时显示）-->
+  <view class="fixed-header {{showFixedHeader ? 'show' : ''}}">
+    <!-- 搜索区域 -->
+    <view class="search-section">
+      <view class="search-box">
+        <input 
+          class="search-input" 
+          placeholder="搜索花朵名称..." 
+          value="{{searchKeyword}}"
+          bindinput="onSearchInput"
+          bindconfirm="onSearchConfirm"
+        />
+        <view class="search-icon">🔍</view>
+      </view>
+    </view>
+
+    <!-- 过滤区域 -->
+    <view class="filter-section">
+      <!-- 过滤模式切换（管理员选择admin时不显示个人拥有） -->
+      <view class="filter-mode-row" wx:if="{{!isAdmin || selectedGameName !== 'admin'}}">
+        <view 
+          class="filter-mode-btn {{filterMode === 'union' ? 'active' : ''}}" 
+          data-mode="union"
+          bindtap="onFilterModeChange"
+        >
+          工会拥有
+        </view>
+        <view 
+          class="filter-mode-btn {{filterMode === 'personal' ? 'active' : ''}}" 
+          data-mode="personal"
+          bindtap="onFilterModeChange"
+        >
+          个人拥有
+        </view>
+      </view>
+      
+      <view class="filter-row view-tags-row">
+        <!-- 工会拥有：只有全部、已拥有、未拥有 -->
+        <view wx:if="{{filterMode === 'union'}}" class="tag-group">
+          <view 
+            class="filter-tag {{viewFilter === 'all' ? 'active' : ''}}" 
+            data-filter="all"
+            bindtap="onViewTagTap"
+          >
+            全部
+          </view>
+          <view 
+            class="filter-tag {{viewFilter === 'owned' ? 'active' : ''}}" 
+            data-filter="owned"
+            bindtap="onViewTagTap"
+          >
+            已拥有
+          </view>
+          <view 
+            class="filter-tag {{viewFilter === 'notOwned' ? 'active' : ''}}" 
+            data-filter="notOwned"
+            bindtap="onViewTagTap"
+          >
+            未拥有
+          </view>
+          
+          <!-- 排序控件 -->
+          <view class="sort-control-wrapper">
+            <view class="sort-icon-btn" bindtap="onToggleSort">
+              <text class="sort-icon">{{sortBy === 'scoreDesc' || sortBy === 'ownerCount' || sortBy === 'nameDesc' ? '↓' : sortBy === 'scoreAsc' || sortBy === 'ownerCountAsc' || sortBy === 'name' ? '↑' : '⇅'}}</text>
+            </view>
+            <view class="sort-text-btn" bindtap="onToggleSortMode">
+              <text class="sort-text">{{sortBy === 'scoreDesc' || sortBy === 'scoreAsc' ? '按分数' : sortBy === 'ownerCount' || sortBy === 'ownerCountAsc' ? '按人数' : '按名称'}}</text>
+            </view>
+          </view>
+        </view>
+        <!-- 个人拥有：全部、已拥有、培育中、未拥有 -->
+        <view wx:if="{{filterMode === 'personal'}}" class="tag-group">
+          <view 
+            class="filter-tag {{viewFilter === 'all' ? 'active' : ''}}" 
+            data-filter="all"
+            bindtap="onViewTagTap"
+          >
+            全部
+          </view>
+          <view 
+            class="filter-tag {{viewFilter === 'owned' ? 'active' : ''}}" 
+            data-filter="owned"
+            bindtap="onViewTagTap"
+          >
+            已拥有
+          </view>
+          <view 
+            class="filter-tag {{viewFilter === 'growing' ? 'active' : ''}}" 
+            data-filter="growing"
+            bindtap="onViewTagTap"
+          >
+            培育中
+          </view>
+          <view 
+            class="filter-tag {{viewFilter === 'notOwned' ? 'active' : ''}}" 
+            data-filter="notOwned"
+            bindtap="onViewTagTap"
+          >
+            未拥有
+          </view>
+          
+          <!-- 排序控件 -->
+          <view class="sort-control-wrapper">
+            <view class="sort-icon-btn" bindtap="onToggleSort">
+              <text class="sort-icon">{{sortBy === 'scoreDesc' || sortBy === 'ownerCount' || sortBy === 'nameDesc' ? '↓' : sortBy === 'scoreAsc' || sortBy === 'ownerCountAsc' || sortBy === 'name' ? '↑' : '⇅'}}</text>
+            </view>
+            <view class="sort-text-btn" bindtap="onToggleSortMode">
+              <text class="sort-text">{{sortBy === 'scoreDesc' || sortBy === 'scoreAsc' ? '按分数' : sortBy === 'ownerCount' || sortBy === 'ownerCountAsc' ? '按人数' : '按名称'}}</text>
+            </view>
+          </view>
+        </view>
+      </view>
+      
+      <view class="filter-row">
+        <view class="filter-item">
+          <text class="filter-label">竞赛分：</text>
+          <input class="score-input" type="number" placeholder="最低" value="{{minScore}}" bindinput="onMinScoreInput" />
+          <text class="score-separator">-</text>
+          <input class="score-input" type="number" placeholder="最高" value="{{maxScore}}" bindinput="onMaxScoreInput" />
+          <button class="apply-btn" size="mini" bindtap="onApplyScoreFilter">刷新</button>
+        </view>
+      </view>
+      
+      <!-- 快速过滤标签 -->
+      <view class="filter-row quick-score-tags">
+        <view 
+          class="score-tag {{minScore == 9 && maxScore == 9 ? 'active' : ''}}"
+          data-score="9"
+          bindtap="onQuickScoreFilter"
+        >
+          9
+        </view>
+        <view 
+          class="score-tag {{minScore == 14 && maxScore == 14 ? 'active' : ''}}"
+          data-score="14"
+          bindtap="onQuickScoreFilter"
+        >
+          14
+        </view>
+        <view 
+          class="score-tag {{minScore == 21 && maxScore == 21 ? 'active' : ''}}"
+          data-score="21"
+          bindtap="onQuickScoreFilter"
+        >
+          21
+        </view>
+        <view 
+          class="score-tag {{minScore == 23 && maxScore == 23 ? 'active' : ''}}"
+          data-score="23"
+          bindtap="onQuickScoreFilter"
+        >
+          23
+        </view>
+        <view 
+          class="score-tag {{minScore == 25 && maxScore == 25 ? 'active' : ''}}"
+          data-score="25"
+          bindtap="onQuickScoreFilter"
+        >
+          25
+        </view>
+        <view 
+          class="score-tag {{minScore == 28 && maxScore == 28 ? 'active' : ''}}"
+          data-score="28"
+          bindtap="onQuickScoreFilter"
+        >
+          28
+        </view>
+        <view 
+          class="score-tag {{minScore == 30 && maxScore == 30 ? 'active' : ''}}"
+          data-score="30"
+          bindtap="onQuickScoreFilter"
+        >
+          30
+        </view>
+      </view>
+    </view>
   </view>
 </view>
 
@@ -162,19 +490,19 @@
     
     <scroll-view class="user-list" scroll-y>
       <view 
-        class="user-item {{selectedUserId === user._id ? 'selected' : ''}}" 
+        class="user-item {{selectedUserId === item._id ? 'selected' : ''}}" 
         wx:for="{{allUsers}}" 
         wx:key="_id"
-        data-user="{{user}}"
+        data-user="{{item}}"
         bindtap="onSelectUser"
       >
-        <text class="user-item-name">{{user.gameName}}</text>
-        <text wx:if="{{selectedUserId === user._id}}" class="user-item-check">✔</text>
+        <text class="user-item-name">{{item.gameName}}</text>
+        <text wx:if="{{selectedUserId === item._id}}" class="user-item-check">✔</text>
       </view>
     </scroll-view>
     
     <view class="modal-buttons">
-      <button class="modal-btn cancel" bindtap="e => setData({showUserPicker: false})">关闭</button>
+      <button class="modal-btn cancel" bindtap="onCloseUserPicker">关闭</button>
     </view>
   </view>
 </view>
@@ -197,14 +525,14 @@
 </view>
 
 <!-- 添加花朵弹窗 -->
-<view class="modal" wx:if="{{showAddFlowerModal}}">
-  <view class="modal-content add-flower-modal">
+<view class="modal" wx:if="{{showAddFlowerModal}}" bindtap="onModalBackgroundTap">
+  <view class="modal-content add-flower-modal" catchtap="onModalContentTap">
     <view class="modal-title">录入花朵信息</view>
     
     <view class="form-item">
       <text class="form-label">花朵图片：</text>
       <view class="image-upload" bindtap="onChooseImage">
-        <image wx:if="{{newFlower.image}}" class="preview-image" src="{{newFlower.image}}" mode="aspectFill" />
+        <image wx:if="{{newFlower.image}}" class="preview-image" src="{{newFlower.image}}" mode="aspectFit" />
         <view wx:else class="upload-placeholder">
           <text class="upload-icon">📷</text>
           <text class="upload-text">点击上传</text>
@@ -230,8 +558,73 @@
     </view>
     
     <view class="modal-buttons">
-      <button class="modal-btn cancel" bindtap="e => setData({showAddFlowerModal: false})">取消</button>
+      <button class="modal-btn cancel" bindtap="onCancelAddFlower">取消</button>
       <button class="modal-btn confirm" bindtap="onConfirmAddFlower">确认</button>
+    </view>
+  </view>
+</view>
+
+<!-- 编辑花朵弹窗 -->
+<view class="modal" wx:if="{{showEditFlowerModal}}" bindtap="onModalBackgroundTap">
+  <view class="modal-content edit-flower-modal" catchtap="onModalContentTap">
+    <view class="modal-title">编辑花朵信息</view>
+    
+    <!-- 花朵基本信息编辑 -->
+    <view class="edit-section">
+      <view class="section-title">基本信息</view>
+      
+      <view class="form-item">
+        <text class="form-label">花朵图片：</text>
+        <view class="image-upload" bindtap="onEditChooseImage">
+          <image wx:if="{{editFlower.image}}" class="preview-image" src="{{editFlower.displayImage || editFlower.image}}" mode="aspectFit" />
+          <view wx:else class="upload-placeholder">
+            <text class="upload-icon">📷</text>
+            <text class="upload-text">点击上传</text>
+          </view>
+        </view>
+      </view>
+      
+      <view class="form-item">
+        <text class="form-label">花朵名称：</text>
+        <input class="form-input" placeholder="请输入花朵名称" value="{{editFlower.name}}" bindinput="onEditFlowerNameInput" />
+      </view>
+      
+      <view class="form-item">
+        <text class="form-label">竞赛分数：</text>
+        <input class="form-input" type="number" placeholder="请输入竞赛分数" value="{{editFlower.score}}" bindinput="onEditFlowerScoreInput" />
+      </view>
+      
+      <view class="form-item">
+        <text class="form-label">花朵类型：</text>
+        <picker mode="selector" range="{{flowerTypes}}" value="{{editFlowerTypeIndex}}" bindchange="onEditFlowerTypeChange">
+          <view class="picker">{{editFlower.type}}</view>
+        </picker>
+      </view>
+    </view>
+    
+    <!-- 拥有者管理 -->
+    <view class="edit-section">
+      <view class="section-title">拥有者管理（已拥有：{{editFlowerOwnerIds.length}}人）</view>
+      
+      <scroll-view class="owner-list" scroll-y>
+        <view 
+          class="owner-item {{item.isOwner ? 'checked' : ''}}" 
+          wx:for="{{editFlowerAllUsers}}" 
+          wx:key="_id"
+          data-user="{{item}}"
+          bindtap="onToggleOwner"
+        >
+          <view class="owner-checkbox">
+            <text wx:if="{{item.isOwner}}" class="check-icon">✔</text>
+          </view>
+          <text class="owner-name">{{item.gameName}}</text>
+        </view>
+      </scroll-view>
+    </view>
+    
+    <view class="modal-buttons">
+      <button class="modal-btn cancel" bindtap="onCancelEditFlower">取消</button>
+      <button class="modal-btn confirm" bindtap="onConfirmEditFlower">保存</button>
     </view>
   </view>
 </view>

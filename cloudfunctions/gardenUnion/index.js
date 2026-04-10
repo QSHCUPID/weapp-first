@@ -49,6 +49,10 @@ exports.main = async (event, context) => {
         return await addFlower(OPENID, event.flower)
       case 'deleteFlower':
         return await deleteFlower(OPENID, event.flowerId, isAdmin)
+      case 'getFlowerOwners':
+        return await getFlowerOwners(OPENID, event.flowerId, isAdmin)
+      case 'updateFlower':
+        return await updateFlower(OPENID, event.flowerId, event.flower, event.ownerIds, isAdmin)
       case 'getTempUrl':
         return await getTempUrl(event.fileID)
       default:
@@ -185,7 +189,7 @@ async function inputUser(openid, gameName, isAdmin) {
 
 // 获取花朵列表
 async function getFlowers(openid, params, isAdmin) {
-  const { searchKeyword, viewFilter, minScore, maxScore, sortBy, selectedUserId, filterMode = 'union' } = params
+  const { searchKeyword, viewFilter, minScore, maxScore, sortBy, selectedUserId, filterMode = 'union', pageNum = 1, pageSize = 10 } = params
   
   // 构建查询条件
   let query = db.collection(COLLECTIONS.FLOWERS)
@@ -313,7 +317,21 @@ async function getFlowers(openid, params, isAdmin) {
     resultFlowers.sort((a, b) => a.name.localeCompare(b.name))
   }
   
-  return { success: true, flowers: resultFlowers }
+  // 应用分页
+  const totalFiltered = resultFlowers.length
+  const skip = (pageNum - 1) * pageSize
+  const paginatedFlowers = resultFlowers.slice(skip, skip + pageSize)
+  const hasMore = skip + pageSize < totalFiltered
+  
+  // 返回总数和过滤后的数量
+  return { 
+    success: true, 
+    flowers: paginatedFlowers,
+    totalCount: flowers.length, // 过滤前的总数（应用搜索和分数过滤后）
+    filteredCount: totalFiltered, // 过滤后的数量
+    hasMore: hasMore, // 是否还有更多数据
+    currentPage: pageNum // 当前页码
+  }
 }
 
 // 标记拥有花朵
@@ -567,6 +585,109 @@ async function deleteFlower(openid, flowerId, isAdmin) {
     return { success: true }
   } catch (err) {
     console.error('删除花朵失败:', err)
+    return {
+      success: false,
+      message: err.message
+    }
+  }
+}
+
+// 获取花朵的所有拥有者
+async function getFlowerOwners(openid, flowerId, isAdmin) {
+  if (!isAdmin) {
+    return { success: false, message: '无权限' }
+  }
+  
+  if (!flowerId) {
+    return { success: false, message: '花朵ID不能为空' }
+  }
+  
+  try {
+    // 获取该花朵的所有拥有记录（只统计 owned 状态）
+    const { data: ownerships } = await db.collection(COLLECTIONS.OWNERSHIPS)
+      .where({ flowerId, status: 'owned' })
+      .get()
+    
+    // 提取所有拥有者的用户ID
+    const ownerIds = ownerships.map(o => o.userId)
+    
+    return {
+      success: true,
+      ownerIds: ownerIds
+    }
+  } catch (err) {
+    console.error('获取花朵拥有者失败:', err)
+    return {
+      success: false,
+      message: err.message
+    }
+  }
+}
+
+// 更新花朵信息和拥有者
+async function updateFlower(openid, flowerId, flower, ownerIds, isAdmin) {
+  if (!isAdmin) {
+    return { success: false, message: '无权限' }
+  }
+  
+  if (!flowerId) {
+    return { success: false, message: '花朵ID不能为空' }
+  }
+  
+  if (!flower || !flower.name || !flower.score || !flower.type || !flower.image) {
+    return { success: false, message: '请填写完整的花朵信息' }
+  }
+  
+  try {
+    const now = new Date()
+    
+    // 1. 更新花朵基本信息
+    await db.collection(COLLECTIONS.FLOWERS)
+      .doc(flowerId)
+      .update({
+        data: {
+          name: flower.name.trim(),
+          score: parseInt(flower.score),
+          type: flower.type,
+          image: flower.image,
+          updatedAt: now
+        }
+      })
+    
+    // 2. 更新拥有关系
+    // 先获取该花朵当前的所有拥有记录
+    const { data: currentOwnerships } = await db.collection(COLLECTIONS.OWNERSHIPS)
+      .where({ flowerId, status: 'owned' })
+      .get()
+    
+    const currentOwnerIds = new Set(currentOwnerships.map(o => o.userId))
+    const newOwnerIds = new Set(ownerIds || [])
+    
+    // 找出需要删除的拥有记录（原来有，现在没有）
+    const toDelete = currentOwnerships.filter(o => !newOwnerIds.has(o.userId))
+    for (const ownership of toDelete) {
+      await db.collection(COLLECTIONS.OWNERSHIPS)
+        .doc(ownership._id)
+        .remove()
+    }
+    
+    // 找出需要添加的拥有记录（原来没有，现在有）
+    const toAdd = Array.from(newOwnerIds).filter(userId => !currentOwnerIds.has(userId))
+    for (const userId of toAdd) {
+      await db.collection(COLLECTIONS.OWNERSHIPS).add({
+        data: {
+          openid: '', // 管理员操作，不记录 openid
+          userId: userId,
+          flowerId: flowerId,
+          status: 'owned',
+          createdAt: now
+        }
+      })
+    }
+    
+    return { success: true }
+  } catch (err) {
+    console.error('更新花朵失败:', err)
     return {
       success: false,
       message: err.message
