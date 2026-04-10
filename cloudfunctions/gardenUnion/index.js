@@ -313,7 +313,17 @@ async function getFlowers(openid, params, isAdmin) {
     resultFlowers.sort((a, b) => b.score - a.score)
   } else if (sortBy === 'scoreAsc') {
     resultFlowers.sort((a, b) => a.score - b.score)
+  } else if (sortBy === 'ownerCount' || sortBy === 'ownerCountDesc') {
+    // 按已拥有人数降序
+    resultFlowers.sort((a, b) => b.ownerCount - a.ownerCount)
+  } else if (sortBy === 'ownerCountAsc') {
+    // 按已拥有人数升序
+    resultFlowers.sort((a, b) => a.ownerCount - b.ownerCount)
+  } else if (sortBy === 'nameDesc') {
+    // 按名称降序
+    resultFlowers.sort((a, b) => b.name.localeCompare(a.name))
   } else if (sortBy === 'name') {
+    // 按名称升序
     resultFlowers.sort((a, b) => a.name.localeCompare(b.name))
   }
   
