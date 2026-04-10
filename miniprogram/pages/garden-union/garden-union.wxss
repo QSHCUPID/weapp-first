@@ -250,44 +250,44 @@ page {
 .flower-actions {
   display: flex;
   flex-direction: row;
-  gap: 6px;
-  margin-left: 10px;
+  gap: 4px;
+  margin-left: 8px;
 }
 
 .action-btn {
-  width: 32px;
-  height: 32px;
+  width: 24px;
+  height: 24px;
   border: none;
   border-radius: 50%;
   display: flex;
   justify-content: center;
   align-items: center;
-  font-size: 16px;
+  font-size: 12px;
   padding: 0;
   background-color: #e0e0e0;
 }
 
 .action-btn.active {
   background-color: #4caf50;
-  box-shadow: 0 2px 6px rgba(76, 175, 80, 0.4);
+  box-shadow: 0 1px 4px rgba(76, 175, 80, 0.3);
 }
 
 .grow-btn {
-  font-size: 18px;
+  font-size: 14px;
 }
 
 .grow-btn.active {
   background-color: #ff9800;
-  box-shadow: 0 2px 6px rgba(255, 152, 0, 0.4);
+  box-shadow: 0 1px 4px rgba(255, 152, 0, 0.3);
 }
 
 .owned-btn {
-  font-size: 15px;
+  font-size: 11px;
 }
 
 .owned-btn.active {
   background-color: #4caf50;
-  box-shadow: 0 2px 6px rgba(76, 175, 80, 0.4);
+  box-shadow: 0 1px 4px rgba(76, 175, 80, 0.3);
 }
 
 .delete-btn {
