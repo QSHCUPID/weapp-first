@@ -202,9 +202,14 @@ async function getFlowers(openid, params, isAdmin) {
   
   // 分数过滤
   if (minScore !== null || maxScore !== null) {
-    const scoreCondition = {}
-    if (minScore !== null) scoreCondition._gte = minScore
-    if (maxScore !== null) scoreCondition._lte = maxScore
+    let scoreCondition = {}
+    if (minScore !== null && maxScore !== null) {
+      scoreCondition = _.and(_.gte(minScore), _.lte(maxScore))
+    } else if (minScore !== null) {
+      scoreCondition = _.gte(minScore)
+    } else if (maxScore !== null) {
+      scoreCondition = _.lte(maxScore)
+    }
     query = query.where({ score: scoreCondition })
   }
   
