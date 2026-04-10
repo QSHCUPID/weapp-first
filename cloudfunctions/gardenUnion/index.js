@@ -47,6 +47,8 @@ exports.main = async (event, context) => {
         return await unmarkGrowing(OPENID, event.flowerId, event.selectedUserId, isAdmin)
       case 'addFlower':
         return await addFlower(OPENID, event.flower)
+      case 'deleteFlower':
+        return await deleteFlower(OPENID, event.flowerId, isAdmin)
       case 'getTempUrl':
         return await getTempUrl(event.fileID)
       default:
@@ -528,6 +530,43 @@ async function addFlower(openid, flower) {
   })
   
   return { success: true, flowerId: result._id }
+}
+
+// 删除花朵
+async function deleteFlower(openid, flowerId, isAdmin) {
+  if (!isAdmin) {
+    return { success: false, message: '无权限删除花朵' }
+  }
+  
+  if (!flowerId) {
+    return { success: false, message: '花朵ID不能为空' }
+  }
+  
+  try {
+    // 先删除该花朵的所有拥有记录
+    const { data: ownerships } = await db.collection(COLLECTIONS.OWNERSHIPS)
+      .where({ flowerId })
+      .get()
+    
+    for (const ownership of ownerships) {
+      await db.collection(COLLECTIONS.OWNERSHIPS)
+        .doc(ownership._id)
+        .remove()
+    }
+    
+    // 再删除花朵记录
+    await db.collection(COLLECTIONS.FLOWERS)
+      .doc(flowerId)
+      .remove()
+    
+    return { success: true }
+  } catch (err) {
+    console.error('删除花朵失败:', err)
+    return {
+      success: false,
+      message: err.message
+    }
+  }
 }
 
 // 获取图片临时链接

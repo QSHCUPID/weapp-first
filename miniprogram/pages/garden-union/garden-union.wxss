@@ -290,6 +290,22 @@ page {
   box-shadow: 0 2px 8px rgba(76, 175, 80, 0.4);
 }
 
+.delete-btn {
+  width: 36px;
+  height: 36px;
+  border: none;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 18px;
+  padding: 0;
+  background-color: #ff5252;
+  color: white;
+  margin-left: 10px;
+  box-shadow: 0 2px 8px rgba(255, 82, 82, 0.4);
+}
+
 .empty-tip {
   text-align: center;
   color: #999;

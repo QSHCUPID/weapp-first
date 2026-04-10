@@ -130,6 +130,16 @@
         ✔
       </button>
     </view>
+    
+    <!-- 只有超级管理员才显示删除按钮 -->
+    <button 
+      class="delete-btn" 
+      wx:if="{{isAdmin}}"
+      data-flower="{{item}}" 
+      bindtap="onDeleteFlower"
+    >
+      🗑️
+    </button>
   </view>
   
   <view class="empty-tip" wx:if="{{flowers.length === 0}}">

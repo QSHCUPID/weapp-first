@@ -558,6 +558,42 @@ Page({
     }
   },
 
+  // 删除花朵
+  async onDeleteFlower(e) {
+    const flower = e.currentTarget.dataset.flower;
+    
+    wx.showModal({
+      title: '确认删除',
+      content: `确定要删除花朵「${flower.name}」吗？删除后无法恢复！`,
+      success: async (res) => {
+        if (res.confirm) {
+          wx.showLoading({ title: '删除中...' });
+          try {
+            const { result } = await wx.cloud.callFunction({
+              name: 'gardenUnion',
+              data: {
+                action: 'deleteFlower',
+                flowerId: flower._id
+              }
+            });
+            
+            if (result.success) {
+              wx.showToast({ title: '删除成功！', icon: 'success' });
+              this.loadFlowers(); // 刷新列表
+            } else {
+              wx.showToast({ title: result.message || '删除失败', icon: 'none' });
+            }
+          } catch (err) {
+            console.error('删除失败:', err);
+            wx.showToast({ title: '删除失败，请重试', icon: 'none' });
+          } finally {
+            wx.hideLoading();
+          }
+        }
+      }
+    });
+  },
+
   // 获取文件扩展名
   getFileExt(filePath) {
     const ext = filePath.split('.').pop();
